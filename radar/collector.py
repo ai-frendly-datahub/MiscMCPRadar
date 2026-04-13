@@ -22,7 +22,7 @@ from .resilience import get_circuit_breaker_manager
 _DEFAULT_HEADERS: dict[str, str] = {
     "User-Agent": "Mozilla/5.0 (compatible; MCPRadarBot/1.0; +https://github.com/zzragida/ai-frendly-datahub)",
 }
-_SECTION_RE = re.compile(r"^###\s+.+?\s+(?P<section>[A-Za-z][^#]+?)\s*$")
+_SECTION_RE = re.compile(r"^###\s+(?:[^\w\s]+\s+)?(?P<section>[A-Za-z][^#]+?)\s*$")
 _ITEM_RE = re.compile(r"^\*\*\[(?P<title>[^\]]+)\]\((?P<link>[^)]+)\)\*\*\s*[–-]\s*(?P<summary>.+)$")
 
 
