@@ -3,7 +3,7 @@ name: Deploy Reports to GitHub Pages
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Radar Crawler"]
+    workflows: ["Radar Crawler (Optimized)"]
     types: [completed]
 
 permissions:

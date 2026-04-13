@@ -44,6 +44,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install "radar-core @ git+https://github.com/ai-frendly-datahub/radar-core.git@main"
           pip install -r requirements.txt
 
       - name: Run Radar
@@ -73,7 +74,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update radar data [skip ci]"
-          file_pattern: data/*.duckdb
+          file_pattern: "data/*.duckdb data/raw/** data/snapshots/** reports/*.html reports/*_summary.json reports/*_quality.json"
           skip_fetch: false
           skip_checkout: false
 
