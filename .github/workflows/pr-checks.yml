@@ -1,0 +1,90 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - '**.py'
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - '.github/workflows/pr-checks.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "radar-core @ git+https://github.com/ai-frendly-datahub/radar-core.git@main"
+          pip install -r requirements.txt
+          pip install black ruff mypy pytest pytest-cov
+
+      - name: Verify pyproject.toml installability
+        run: |
+          pip install -e . 2>&1 || echo "::warning::pip install -e . failed"
+        continue-on-error: true
+
+      - name: Run Black (code formatting check)
+        run: black --check --line-length=100 .
+        continue-on-error: true
+
+      - name: Run Ruff (linting)
+        run: ruff check . --line-length=100
+        continue-on-error: true
+
+      - name: Run MyPy (type checking)
+        run: mypy . --strict --ignore-missing-imports
+        continue-on-error: true
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ -v --cov=. --cov-report=xml --cov-report=term-missing --tb=short
+        continue-on-error: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Comment PR with coverage
+        if: always()
+        uses: py-cov-action/python-coverage-comment-action@v3
+        continue-on-error: true
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          MINIMUM_GREEN: 80
+          MINIMUM_ORANGE: 60
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(grep -oP 'TOTAL.*?(\d+)%' coverage.txt | grep -oP '\d+(?=%)')
+          if [ "$COVERAGE" -lt 80 ]; then
+            echo "❌ Coverage is $COVERAGE%, minimum required is 80%"
+            exit 1
+          fi
+          echo "✅ Coverage is $COVERAGE%, meets minimum requirement"
+        continue-on-error: true

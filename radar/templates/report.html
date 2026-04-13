@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ category.display_name }} - Radar Report</title>
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --border-subtle: #e2e8f0;
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.12);
+      --accent-teal: #33d6c5;
+      --accent-blue: #19a7c3;
+      --accent-yellow: #f6c84c;
+      --accent-indigo: #78a2ff;
+      --accent-coral: #ff5b6e;
+      --accent-purple: #a076ff;
+      --accent-green: #5fde84;
+      --accent-orange: #ff9a4a;
+      --error-bg: #fef2f2;
+      --error-border: #fecaca;
+      --error-text: #b91c1c;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-full: 9999px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0; padding: 0;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Header */
+    .header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 28px; padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .header__info { flex: 1; }
+    .header__title {
+      font-size: 28px; font-weight: 700; color: var(--text-primary);
+      margin: 0 0 4px 0; letter-spacing: -0.02em;
+    }
+    .header__timestamp { font-size: 13px; color: var(--text-muted); }
+    .export-actions { display: flex; gap: 8px; align-items: flex-start; }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card);
+      border-left: 4px solid var(--accent-teal);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-1px); }
+    .stat-card--blue { border-left-color: var(--accent-blue); }
+    .stat-card--yellow { border-left-color: var(--accent-yellow); }
+    .stat-card--indigo { border-left-color: var(--accent-indigo); }
+    .stat-card__label {
+      font-size: 12px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+    }
+    .stat-card__value { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+
+    /* Errors */
+    .error-alert {
+      background: var(--error-bg); border: 1px solid var(--error-border);
+      border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;
+    }
+    .error-alert__title { font-weight: 600; color: var(--error-text); margin: 0 0 8px 0; }
+    .error-alert__item { font-size: 13px; color: var(--error-text); margin: 4px 0; }
+
+    /* Filter Bar */
+    .filter-bar {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 16px; margin-bottom: 24px;
+      box-shadow: var(--shadow-card); min-height: 20px;
+    }
+
+
+    /* Filter Controls */
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .filter-bar select, .filter-bar input {
+      font-family: inherit; font-size: 13px; padding: 8px 12px;
+      border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+      background: var(--bg-card); color: var(--text-primary);
+      outline: none; min-width: 140px;
+    }
+    .filter-bar select:focus, .filter-bar input:focus {
+      border-color: var(--accent-teal); box-shadow: 0 0 0 2px rgba(51,214,197,0.2);
+    }
+    .filter-bar input[type="date"] { min-width: 130px; }
+    .filter-bar input[type="search"] { min-width: 200px; }
+    .filter-status {
+      font-size: 12px; color: var(--text-muted); width: 100%; margin-top: 4px;
+    }
+    .filter-clear {
+      font-size: 12px; color: var(--accent-blue); cursor: pointer;
+      background: none; border: none; font-family: inherit; padding: 4px 8px;
+    }
+    .filter-clear:hover { text-decoration: underline; }
+    /* Export Button */
+    .btn-export {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--radius-sm);
+      background: var(--accent-teal); color: #fff;
+      font-size: 13px; font-weight: 500; border: none;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.2s;
+    }
+    .btn-export:hover { background: #2bc4b4; }
+    .btn-export:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Section Headers */
+    .section-title {
+      font-size: 18px; font-weight: 600; color: var(--text-primary);
+      margin: 32px 0 16px 0; letter-spacing: -0.01em;
+    }
+
+    /* Chart Cards */
+    .charts-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 16px; margin-bottom: 24px;
+    }
+    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card); overflow: hidden;
+    }
+    .chart-card__header {
+      padding: 14px 20px; border-bottom: 1px solid var(--border-subtle);
+    }
+    .chart-card__title {
+      font-size: 13px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.04em; margin: 0;
+    }
+    .chart-card__body { padding: 16px; height: 280px; position: relative; }
+
+    /* Entity Pills */
+    .entity-section {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 24px;
+    }
+    .pill {
+      display: inline-block; padding: 4px 12px; border-radius: var(--radius-full);
+      background: rgba(51,214,197,0.12); color: #0d9488;
+      font-size: 13px; font-weight: 500; margin: 3px 4px 3px 0;
+    }
+
+    /* Article Cards */
+    .articles-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+    }
+    .article-card {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card);
+      transition: box-shadow 0.2s;
+    }
+    .article-card:hover { box-shadow: var(--shadow-card-hover); }
+    .article-card__title {
+      font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0 0 8px 0;
+    }
+    .article-card__title a { color: var(--text-primary); text-decoration: none; }
+    .article-card__title a:hover { color: var(--accent-blue); text-decoration: underline; }
+    .article-card__meta {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px; flex-wrap: wrap;
+    }
+    .source-badge {
+      display: inline-flex; padding: 2px 10px; border-radius: var(--radius-full);
+      background: rgba(25,167,195,0.12); color: #0891b2;
+      font-size: 11px; font-weight: 500;
+    }
+    .article-card__date { font-size: 12px; color: var(--text-muted); }
+    .article-card__summary {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 10px 0;
+    }
+    .chip {
+      display: inline-block; padding: 3px 10px; border-radius: var(--radius-sm);
+      font-size: 11px; font-weight: 500; margin: 2px 4px 2px 0;
+      background: rgba(120,162,255,0.15); color: #4f6dbd;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      background: var(--bg-card); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+    }
+    .empty-state__icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-state__title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .empty-state__message { font-size: 13px; color: var(--text-muted); }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px; padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center; font-size: 13px; color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header__info">
+        <h1 class="header__title">{{ category.display_name }}</h1>
+        <div class="header__timestamp">Generated {{ generated_at.isoformat() }} UTC</div>
+      </div>
+      <div id="export-actions" class="export-actions"><button class="btn-export" id="btn-csv" onclick="exportCSV()">Export CSV</button></div>
+    </header>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="stat-card">
+        <div class="stat-card__label">Sources</div>
+        <div class="stat-card__value">{{ stats.sources }}</div>
+      </div>
+      <div class="stat-card stat-card--blue">
+        <div class="stat-card__label">Collected</div>
+        <div class="stat-card__value">{{ stats.collected }}</div>
+      </div>
+      <div class="stat-card stat-card--yellow">
+        <div class="stat-card__label">Entity Hits</div>
+        <div class="stat-card__value">{{ stats.matched }}</div>
+      </div>
+      <div class="stat-card stat-card--indigo">
+        <div class="stat-card__label">Window (days)</div>
+        <div class="stat-card__value">{{ stats.window_days }}</div>
+      </div>
+    </div>
+
+    <!-- Errors -->
+    {% if errors %}
+    <div class="error-alert">
+      <div class="error-alert__title">Collection Errors</div>
+      {% for error in errors %}
+      <div class="error-alert__item">• {{ error }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Filter Bar (placeholder for Task 6) -->
+    <div id="filter-bar" class="filter-bar">
+      <select id="filter-entity" aria-label="Filter by entity"><option value="">All Entities</option></select>
+      <select id="filter-source" aria-label="Filter by source"><option value="">All Sources</option></select>
+      <input type="date" id="filter-date-from" aria-label="From date" title="From date">
+      <input type="date" id="filter-date-to" aria-label="To date" title="To date">
+      <input type="search" id="filter-search" placeholder="Search titles & summaries..." aria-label="Search articles">
+      <button class="filter-clear" id="filter-clear" onclick="clearFilters()" style="display:none">Clear all</button>
+      <div class="filter-status" id="filter-status"></div>
+    </div>
+
+    <!-- Charts -->
+    <h2 class="section-title">Analytics</h2>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Entity Distribution</h3></div>
+        <div class="chart-card__body"><canvas id="chartEntities"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Article Timeline</h3></div>
+        <div class="chart-card__body"><canvas id="chartTimeline"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Source Distribution</h3></div>
+        <div class="chart-card__body"><canvas id="chartSources"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Data Freshness</h3></div>
+        <div class="chart-card__body"><canvas id="chartFreshness"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Entity Extraction Rate</h3></div>
+        <div class="chart-card__body"><canvas id="chartEntityRate"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Source Health</h3></div>
+        <div class="chart-card__body"><canvas id="chartSourceHealth"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Entity Hits -->
+    {% if entity_counts %}
+    <h2 class="section-title">Entity Hit Counts</h2>
+    <div class="entity-section">
+      {% for entity, count in entity_counts.most_common() %}
+        <span class="pill">{{ entity }} · {{ count }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Articles -->
+    <h2 class="section-title" id="articles-heading">Recent Articles</h2>
+    <div class="articles-grid" id="articles-list">
+      {% for article in articles %}
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer">{{ article.title }}</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">{{ article.source }}</span>
+          {% if article.published %}
+          <span class="article-card__date">{{ article.published.date().isoformat() }}</span>
+          {% endif %}
+        </div>
+        <div class="article-card__summary">{{ article.summary[:220] }}{% if article.summary|length > 220 %}…{% endif %}</div>
+        {% if article.matched_entities %}
+        <div>
+          {% for entity, keywords in article.matched_entities.items() %}
+            <span class="chip">{{ entity }}: {{ keywords | join(", ") }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% if articles|length == 0 %}
+      <div class="empty-state">
+        <div class="empty-state__icon">📭</div>
+        <div class="empty-state__title">No articles found</div>
+        <div class="empty-state__message">No articles were collected in the recent window. Check source configuration or try again later.</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      Radar Report — generated {{ generated_at.isoformat() }} UTC
+    </footer>
+  </div>
+
+  <!-- Data blocks -->
+  <script id="articles-data" type="application/json">{{ articles_json|tojson }}</script>
+  <script id="entities-data" type="application/json">{{ entity_counts|tojson if entity_counts else '{}' }}</script>
+
+  <!-- Chart.js: local first, CDN fallback -->
+  <script src="static/chart.min.js"></script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js';
+      document.head.appendChild(s);
+    }
+  </script>
+  <script>
+    /* === CSV Export === */
+    function exportCSV() {
+      var data = window.__filteredArticles || readJson("articles-data", []);
+      if (!data.length) { alert("No data to export"); return; }
+      var BOM = "\uFEFF";
+      var headers = ["Title","Source","Published","Summary","Entities","Link"];
+      var rows = [headers.join(",")];
+      for (var i = 0; i < data.length; i++) {
+        var a = data[i];
+        var ents = "";
+        if (a.matched_entities) {
+          ents = Object.entries(a.matched_entities).map(function(e) {
+            return e[0] + ": " + (Array.isArray(e[1]) ? e[1].join(", ") : e[1]);
+          }).join("; ");
+        }
+        var pub = a.published_at || a.published || "";
+        if (pub) { var d = new Date(String(pub)); if (!isNaN(d.getTime())) pub = d.toISOString().slice(0,10); }
+        rows.push([
+          csvEsc(a.title || ""), csvEsc(a.source || ""), csvEsc(String(pub)),
+          csvEsc(a.summary || ""), csvEsc(ents), csvEsc(a.link || "")
+        ].join(","));
+      }
+      var csv = BOM + rows.join("\n");
+      var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var el = document.createElement("a");
+      var title = document.querySelector(".header__title");
+      var catName = title ? title.textContent.trim().replace(/\s+/g, "_") : "report";
+      var dateStr = new Date().toISOString().slice(0,10);
+      el.href = url; el.download = catName + "_report_" + dateStr + ".csv";
+      document.body.appendChild(el); el.click(); document.body.removeChild(el);
+      URL.revokeObjectURL(url);
+    }
+    function csvEsc(s) {
+      if (s == null) return '""';
+      s = String(s);
+      if (s.indexOf(",") >= 0 || s.indexOf('"') >= 0 || s.indexOf("\n") >= 0)
+        return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+
+    /* === Filter Logic === */
+    function readJson(id, fallback) {
+      var el = document.getElementById(id);
+      if (!el) return fallback;
+      var txt = (el.textContent || "").trim();
+      if (!txt) return fallback;
+      try { return JSON.parse(txt); } catch (e) { return fallback; }
+    }
+
+    var _allArticles = readJson("articles-data", []);
+    window.__filteredArticles = _allArticles;
+    var _filterTimer = null;
+
+    function populateFilters() {
+      var entitySet = new Set(), sourceSet = new Set();
+      for (var i = 0; i < _allArticles.length; i++) {
+        var a = _allArticles[i];
+        if (a.source) sourceSet.add(a.source);
+        if (a.matched_entities) {
+          Object.keys(a.matched_entities).forEach(function(e) { entitySet.add(e); });
+        }
+      }
+      var eSelect = document.getElementById("filter-entity");
+      entitySet.forEach(function(e) {
+        var opt = document.createElement("option"); opt.value = e; opt.textContent = e;
+        eSelect.appendChild(opt);
+      });
+      var sSelect = document.getElementById("filter-source");
+      sourceSet.forEach(function(s) {
+        var opt = document.createElement("option"); opt.value = s; opt.textContent = s;
+        sSelect.appendChild(opt);
+      });
+    }
+
+    function getArticleDateForFilter(a) {
+      var v = a && (a.published_at || a.published || a.date || a.datetime);
+      if (!v) return null;
+      var d = new Date(String(v));
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function applyFilters() {
+      var entity = document.getElementById("filter-entity").value;
+      var source = document.getElementById("filter-source").value;
+      var dateFrom = document.getElementById("filter-date-from").value;
+      var dateTo = document.getElementById("filter-date-to").value;
+      var search = document.getElementById("filter-search").value.toLowerCase().trim();
+
+      var fromDate = dateFrom ? new Date(dateFrom + "T00:00:00") : null;
+      var toDate = dateTo ? new Date(dateTo + "T23:59:59") : null;
+
+      var filtered = _allArticles.filter(function(a) {
+        if (entity && !(a.matched_entities && a.matched_entities[entity])) return false;
+        if (source && a.source !== source) return false;
+        if (fromDate || toDate) {
+          var d = getArticleDateForFilter(a);
+          if (d) {
+            if (fromDate && d < fromDate) return false;
+            if (toDate && d > toDate) return false;
+          }
+        }
+        if (search) {
+          var title = (a.title || "").toLowerCase();
+          var summary = (a.summary || "").toLowerCase();
+          if (title.indexOf(search) < 0 && summary.indexOf(search) < 0) return false;
+        }
+        return true;
+      });
+
+      window.__filteredArticles = filtered;
+      updateArticleDisplay(filtered);
+      rebuildCharts(filtered);
+
+      var statusEl = document.getElementById("filter-status");
+      var clearBtn = document.getElementById("filter-clear");
+      var hasFilters = entity || source || dateFrom || dateTo || search;
+      if (hasFilters) {
+        statusEl.textContent = "Showing " + filtered.length + " of " + _allArticles.length + " articles";
+        clearBtn.style.display = "inline";
+      } else {
+        statusEl.textContent = "";
+        clearBtn.style.display = "none";
+      }
+      var csvBtn = document.getElementById("btn-csv");
+      if (csvBtn) csvBtn.disabled = filtered.length === 0;
+    }
+
+    function clearFilters() {
+      document.getElementById("filter-entity").value = "";
+      document.getElementById("filter-source").value = "";
+      document.getElementById("filter-date-from").value = "";
+      document.getElementById("filter-date-to").value = "";
+      document.getElementById("filter-search").value = "";
+      applyFilters();
+    }
+
+    function updateArticleDisplay(filtered) {
+      var container = document.getElementById("articles-list");
+      if (!container) return;
+      var filteredLinks = new Set(filtered.map(function(a) { return a.link; }));
+      var cards = container.querySelectorAll(".article-card");
+      for (var i = 0; i < cards.length; i++) {
+        var link = cards[i].querySelector("a");
+        if (link) {
+          cards[i].style.display = filteredLinks.has(link.href) ? "" : "none";
+        }
+      }
+      var empty = container.querySelector(".empty-state");
+      if (empty) {
+        empty.style.display = (filtered.length === 0 && _allArticles.length > 0) ? "" : "none";
+        if (filtered.length === 0 && _allArticles.length > 0) {
+          var msg = empty.querySelector(".empty-state__message");
+          if (msg) msg.textContent = "No articles match your current filters. Try adjusting or clearing them.";
+        }
+      }
+    }
+
+    /* Chart instances for rebuilding */
+    var _chartInstances = {};
+
+    function rebuildCharts(data) {
+      Object.keys(_chartInstances).forEach(function(id) {
+        if (_chartInstances[id]) _chartInstances[id].destroy();
+      });
+      _chartInstances = {};
+      buildAllCharts(data);
+    }
+
+    /* Attach filter events */
+    document.addEventListener("DOMContentLoaded", function() {
+      populateFilters();
+      ["filter-entity", "filter-source", "filter-date-from", "filter-date-to"].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener("change", applyFilters);
+      });
+      var searchEl = document.getElementById("filter-search");
+      if (searchEl) {
+        searchEl.addEventListener("input", function() {
+          clearTimeout(_filterTimer);
+          _filterTimer = setTimeout(applyFilters, 300);
+        });
+      }
+    });
+  </script>
+  <script>
+    (function () {
+      function readJson(id, fallback) {
+        var el = document.getElementById(id);
+        if (!el) return fallback;
+        var txt = (el.textContent || "").trim();
+        if (!txt) return fallback;
+        try { return JSON.parse(txt); } catch (e) { return fallback; }
+      }
+
+      var articles = readJson("articles-data", []);
+      var entityCountsRaw = readJson("entities-data", {});
+
+      function normalizeEntityPairs(raw) {
+        if (!raw) return [];
+        if (Array.isArray(raw)) {
+          if (raw.length && Array.isArray(raw[0]) && raw[0].length >= 2)
+            return raw.map(function(p) { return [String(p[0]), Number(p[1]) || 0]; });
+          if (raw.length && typeof raw[0] === "object")
+            return raw.map(function(o) { return [String(o.name || o.entity || ""), Number(o.count || o.value || 0) || 0]; }).filter(function(p) { return p[0]; });
+          return [];
+        }
+        if (typeof raw === "object")
+          return Object.entries(raw).map(function(e) { return [String(e[0]), Number(e[1]) || 0]; });
+        return [];
+      }
+
+      function getArticleDate(a) {
+        var v = a && (a.published_at || a.published || a.date || a.datetime || a.publishedAt);
+        if (!v) return null;
+        var s = String(v);
+        var direct = new Date(s);
+        if (!isNaN(direct.getTime())) return direct;
+        var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) { var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])); if (!isNaN(d.getTime())) return d; }
+        return null;
+      }
+
+      function toDayKey(d) {
+        var y = d.getFullYear();
+        var mo = String(d.getMonth() + 1).padStart(2, "0");
+        var day = String(d.getDate()).padStart(2, "0");
+        return y + "-" + mo + "-" + day;
+      }
+
+      function buildTimeline(items) {
+        var map = new Map();
+        for (var i = 0; i < items.length; i++) {
+          var d = getArticleDate(items[i]);
+          if (!d) continue;
+          var k = toDayKey(d);
+          map.set(k, (map.get(k) || 0) + 1);
+        }
+        var keys = Array.from(map.keys()).sort();
+        return { labels: keys, values: keys.map(function(k) { return map.get(k) || 0; }) };
+      }
+
+      function buildSources(items) {
+        var map = new Map();
+        for (var i = 0; i < items.length; i++) {
+          var s = (items[i] && items[i].source) ? String(items[i].source).trim() : "unknown";
+          var key = s || "unknown";
+          map.set(key, (map.get(key) || 0) + 1);
+        }
+        var pairs = Array.from(map.entries()).sort(function(a, b) { return b[1] - a[1]; });
+        var top = pairs.slice(0, 10);
+        var rest = pairs.slice(10).reduce(function(acc, p) { return acc + p[1]; }, 0);
+        var labels = top.map(function(p) { return p[0]; });
+        var values = top.map(function(p) { return p[1]; });
+        if (rest > 0) { labels.push("other"); values.push(rest); }
+        return { labels: labels, values: values };
+      }
+
+      function palette(n) {
+        var base = [
+          "rgba(51,214,197,.86)", "rgba(25,167,195,.78)", "rgba(246,200,76,.86)",
+          "rgba(120,162,255,.78)", "rgba(255,91,110,.74)", "rgba(160,118,255,.70)",
+          "rgba(95,222,132,.70)", "rgba(255,154,74,.70)"
+        ];
+        var out = [];
+        for (var i = 0; i < n; i++) out.push(base[i % base.length]);
+        return out;
+      }
+
+      function buildFreshness(items) {
+        var lagBuckets = { "0-1h": 0, "1-6h": 0, "6-24h": 0, "1-3d": 0, "3-7d": 0, "7d+": 0 };
+        for (var i = 0; i < items.length; i++) {
+          var a = items[i];
+          var pubStr = a && (a.published_at || a.published);
+          var collStr = a && a.collected_at;
+          if (!pubStr || !collStr) continue;
+          var pubDate = new Date(String(pubStr));
+          var collDate = new Date(String(collStr));
+          if (isNaN(pubDate.getTime()) || isNaN(collDate.getTime())) continue;
+          var lagHours = (collDate.getTime() - pubDate.getTime()) / (1000 * 60 * 60);
+          if (lagHours < 1) lagBuckets["0-1h"]++;
+          else if (lagHours < 6) lagBuckets["1-6h"]++;
+          else if (lagHours < 24) lagBuckets["6-24h"]++;
+          else if (lagHours < 72) lagBuckets["1-3d"]++;
+          else if (lagHours < 168) lagBuckets["3-7d"]++;
+          else lagBuckets["7d+"]++;
+        }
+        return { labels: Object.keys(lagBuckets), values: Object.values(lagBuckets) };
+      }
+
+      function buildEntityRate(items) {
+        var w = 0, wo = 0;
+        for (var i = 0; i < items.length; i++) {
+          var ents = items[i] && items[i].matched_entities;
+          if (ents && Object.keys(ents).length > 0) w++; else wo++;
+        }
+        return { with: w, without: wo };
+      }
+
+      function buildSourceHealth(items) {
+        var map = new Map();
+        for (var i = 0; i < items.length; i++) {
+          var s = (items[i] && items[i].source) ? String(items[i].source).trim() : "unknown";
+          map.set(s || "unknown", (map.get(s || "unknown") || 0) + 1);
+        }
+        var pairs = Array.from(map.entries()).sort(function(a, b) { return b[1] - a[1]; });
+        return { labels: pairs.map(function(p) { return p[0]; }), values: pairs.map(function(p) { return p[1]; }) };
+      }
+
+      if (!window.Chart) return;
+      window.buildAllCharts = function(filteredData) {
+        if (filteredData) articles = filteredData;
+
+      var entityPairs = normalizeEntityPairs(entityCountsRaw)
+        .filter(function(p) { return p[0] && Number.isFinite(p[1]); })
+        .sort(function(a, b) { return b[1] - a[1]; })
+        .slice(0, 12);
+      var timeline = buildTimeline(articles);
+      var sources = buildSources(articles);
+
+      // 1. Entity Distribution (bar)
+      var ec = document.getElementById("chartEntities");
+      if (ec && entityPairs.length) {
+        new Chart(ec.getContext("2d"), {
+          type: "bar",
+          data: { labels: entityPairs.map(function(p){return p[0];}), datasets: [{ label: "count", data: entityPairs.map(function(p){return p[1];}), backgroundColor: "rgba(51,214,197,.35)", borderColor: "rgba(51,214,197,.72)", borderWidth: 1.2, borderRadius: 8 }] },
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      // 2. Timeline (line)
+      var tc = document.getElementById("chartTimeline");
+      if (tc && timeline.labels.length) {
+        new Chart(tc.getContext("2d"), {
+          type: "line",
+          data: { labels: timeline.labels, datasets: [{ label: "articles/day", data: timeline.values, tension: 0.3, fill: true, borderColor: "rgba(246,200,76,.84)", backgroundColor: "rgba(246,200,76,.15)", pointRadius: 3, pointBackgroundColor: "rgba(246,200,76,.84)" }] },
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      // 3. Source Distribution (doughnut)
+      var sc = document.getElementById("chartSources");
+      if (sc && sources.labels.length) {
+        var cols = palette(sources.labels.length);
+        new Chart(sc.getContext("2d"), {
+          type: "doughnut",
+          data: { labels: sources.labels, datasets: [{ label: "articles", data: sources.values, backgroundColor: cols.map(function(c){return c.replace(/[\d.]+\)$/,".35)");}), borderColor: cols.map(function(c){return c.replace(/[\d.]+\)$/,".80)");}), borderWidth: 1.2 }] },
+          options: { cutout: "62%", plugins: { legend: { position: "bottom" } } }
+        });
+      }
+
+      // 4. Data Freshness (bar)
+      var freshnessData = buildFreshness(articles);
+      var fc = document.getElementById("chartFreshness");
+      if (fc && freshnessData.labels.length) {
+        new Chart(fc.getContext("2d"), {
+          type: "bar",
+          data: { labels: freshnessData.labels, datasets: [{ label: "articles", data: freshnessData.values, backgroundColor: "rgba(120,162,255,.35)", borderColor: "rgba(120,162,255,.72)", borderWidth: 1.2, borderRadius: 8 }] },
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      // 5. Entity Extraction Rate (doughnut with center %)
+      var erd = buildEntityRate(articles);
+      var erc = document.getElementById("chartEntityRate");
+      if (erc) {
+        var total = erd.with + erd.without;
+        var pct = total > 0 ? Math.round((erd.with / total) * 100) : 0;
+        var centerPlugin = {
+          id: "textCenter",
+          beforeDatasetsDraw: function(c) {
+            var w = c.chartArea.width, h = c.chartArea.height;
+            var x = c.chartArea.left + w / 2, y = c.chartArea.top + h / 2;
+            c.ctx.save();
+            c.ctx.font = "bold 24px sans-serif";
+            c.ctx.fillStyle = "rgba(15,23,42,.8)";
+            c.ctx.textAlign = "center";
+            c.ctx.textBaseline = "middle";
+            c.ctx.fillText(pct + "%", x, y);
+            c.ctx.restore();
+          }
+        };
+        new Chart(erc.getContext("2d"), {
+          type: "doughnut",
+          data: { labels: ["With entities", "Without entities"], datasets: [{ data: [erd.with, erd.without], backgroundColor: ["rgba(95,222,132,.35)", "rgba(255,91,110,.35)"], borderColor: ["rgba(95,222,132,.80)", "rgba(255,91,110,.80)"], borderWidth: 1.2 }] },
+          options: { cutout: "62%", plugins: { legend: { position: "bottom" }, tooltip: { enabled: true } } },
+          plugins: [centerPlugin]
+        });
+      }
+
+      // 6. Source Health (horizontal bar)
+      var shd = buildSourceHealth(articles);
+      var shc = document.getElementById("chartSourceHealth");
+      if (shc && shd.labels.length) {
+        var shCols = palette(shd.labels.length);
+        new Chart(shc.getContext("2d"), {
+          type: "bar",
+          data: { labels: shd.labels, datasets: [{ label: "articles", data: shd.values, backgroundColor: shCols.map(function(c){return c.replace(/[\d.]+\)$/,".35)");}), borderColor: shCols.map(function(c){return c.replace(/[\d.]+\)$/,".80)");}), borderWidth: 1.2, borderRadius: 8 }] },
+          options: { indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+      }
+      };
+      window.buildAllCharts(articles);
+    })();
+  </script>
+</body>
+</html>

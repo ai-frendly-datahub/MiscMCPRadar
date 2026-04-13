@@ -1,0 +1,12 @@
+{
+  "pythonVersion": "3.11",
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        ".",
+        "../radar-core"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+name: Weekly Health Check
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Every Sunday at 03:00 UTC (12:00 KST)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  check-all-projects:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - repo: BenefitRadar
+            branch: master
+          - repo: BlogRadar
+            branch: main
+          - repo: EventRadar
+            branch: main
+          - repo: GameRadar
+            branch: master
+          - repo: HomeRadar
+            branch: main
+          - repo: MobilityRadar
+            branch: main
+          - repo: PaperRadar
+            branch: main
+          - repo: PaperworkRadar
+            branch: main
+          - repo: PolicyRadar
+            branch: main
+          - repo: PriceRadar
+            branch: main
+          - repo: QueueRadar
+            branch: main
+          - repo: RefundRadar
+            branch: main
+          - repo: SubscriptionRadar
+            branch: main
+          - repo: TrendRadar
+            branch: main
+          - repo: TrustRadar
+            branch: main
+          - repo: WineRadar
+            branch: main
+
+    steps:
+      - name: Checkout ${{ matrix.repo }}
+        uses: actions/checkout@v4
+        with:
+          repository: ai-frendly-datahub/${{ matrix.repo }}
+          ref: ${{ matrix.branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black ruff mypy
+
+      - name: Black check
+        run: black --check --line-length=100 .
+        continue-on-error: true
+
+      - name: Ruff check
+        run: ruff check . --line-length=100
+        continue-on-error: true
+
+      - name: MyPy check
+        run: mypy . --strict --ignore-missing-imports
+        continue-on-error: true
+
+      - name: Verify pip install
+        run: pip install -e . 2>&1 || echo "::warning::pip install -e . failed for ${{ matrix.repo }}"
+        continue-on-error: true
+
+  summary:
+    needs: check-all-projects
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Health check summary
+        run: |
+          echo "## Weekly Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Date: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- Projects checked: 16" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.check-all-projects.result }}" >> $GITHUB_STEP_SUMMARY
