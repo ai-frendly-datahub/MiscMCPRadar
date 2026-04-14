@@ -176,9 +176,13 @@ reports/*.duckdb
 
 # Generated workflow artifacts
 .sisyphus/
-data/raw/
+data/raw/*
 !data/raw/.gitkeep
-data/daily/
+!data/raw/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+!data/raw/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/**
+data/daily/*
+!data/daily/.gitkeep
+!data/daily/*.duckdb
 data/search_index.db
 data/search_index.db-wal
 data/search_index.db-shm
