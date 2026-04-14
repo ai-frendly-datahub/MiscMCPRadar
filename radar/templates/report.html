@@ -1,39 +1,47 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-visual-system="radar-unified-v2" data-visual-surface="report">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
   <title>{{ category.display_name }} - Radar Report</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
   <style>
     :root {
-      --bg-page: #f8fafc;
-      --bg-card: #ffffff;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #64748b;
-      --border-subtle: #e2e8f0;
-      --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
-      --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.12);
+      --bg-page: #0b0b0f;
+      --bg-card: rgba(28, 26, 34, 0.86);
+      --bg-card-strong: rgba(36, 33, 43, 0.94);
+      --text-primary: #f4f4f7;
+      --text-secondary: rgba(244, 244, 247, 0.76);
+      --text-muted: rgba(244, 244, 247, 0.58);
+      --border-subtle: rgba(244, 244, 247, 0.14);
+      --shadow-card: 0 14px 42px rgba(0,0,0,0.34);
+      --shadow-card-hover: 0 18px 52px rgba(0,0,0,0.42);
       --accent-teal: #33d6c5;
-      --accent-blue: #19a7c3;
+      --accent-blue: #19b591;
       --accent-yellow: #f6c84c;
       --accent-indigo: #78a2ff;
       --accent-coral: #ff5b6e;
-      --accent-purple: #a076ff;
       --accent-green: #5fde84;
       --accent-orange: #ff9a4a;
-      --error-bg: #fef2f2;
-      --error-border: #fecaca;
-      --error-text: #b91c1c;
+      --error-bg: rgba(255, 91, 110, 0.13);
+      --error-border: rgba(255, 91, 110, 0.28);
+      --error-text: #ff9ca8;
       --radius-sm: 6px;
-      --radius-md: 12px;
+      --radius-md: 8px;
       --radius-full: 9999px;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+      --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       margin: 0; padding: 0;
-      background: var(--bg-page);
+      background: linear-gradient(180deg, var(--bg-page), #121116 58%, #08080b);
       color: var(--text-primary);
       line-height: 1.5;
     }
@@ -58,6 +66,29 @@
       display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px; margin-bottom: 24px;
     }
+    .quality-panel {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 24px;
+      border-left: 4px solid var(--accent-blue);
+    }
+    .quality-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 16px;
+    }
+    .quality-metric {
+      border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+      padding: 10px 12px; background: rgba(244,244,247,0.04);
+    }
+    .quality-metric__label {
+      display: block; font-size: 11px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .quality-metric__value {
+      display: block; font-size: 20px; font-weight: 700; color: var(--text-primary);
+      margin-top: 2px;
+    }
+    .quality-list { margin: 10px 0 0 18px; padding: 0; color: var(--text-secondary); font-size: 13px; }
+    .quality-list li { margin: 5px 0; }
     .stat-card {
       background: var(--bg-card); border-radius: var(--radius-md);
       padding: 20px; box-shadow: var(--shadow-card);
@@ -115,7 +146,7 @@
     .btn-export {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 8px 16px; border-radius: var(--radius-sm);
-      background: var(--accent-teal); color: #fff;
+      background: var(--accent-teal); color: #06110f;
       font-size: 13px; font-weight: 500; border: none;
       cursor: pointer; font-family: inherit;
       transition: background 0.2s;
@@ -155,7 +186,7 @@
     }
     .pill {
       display: inline-block; padding: 4px 12px; border-radius: var(--radius-full);
-      background: rgba(51,214,197,0.12); color: #0d9488;
+      background: rgba(51,214,197,0.12); color: var(--accent-teal);
       font-size: 13px; font-weight: 500; margin: 3px 4px 3px 0;
     }
 
@@ -181,7 +212,7 @@
     }
     .source-badge {
       display: inline-flex; padding: 2px 10px; border-radius: var(--radius-full);
-      background: rgba(25,167,195,0.12); color: #0891b2;
+      background: rgba(25,181,145,0.12); color: var(--accent-teal);
       font-size: 11px; font-weight: 500;
     }
     .article-card__date { font-size: 12px; color: var(--text-muted); }
@@ -191,7 +222,7 @@
     .chip {
       display: inline-block; padding: 3px 10px; border-radius: var(--radius-sm);
       font-size: 11px; font-weight: 500; margin: 2px 4px 2px 0;
-      background: rgba(120,162,255,0.15); color: #4f6dbd;
+      background: rgba(120,162,255,0.15); color: #b9c9ff;
     }
 
     /* Empty State */
@@ -292,6 +323,46 @@
         <div class="chart-card__body"><canvas id="chartSourceHealth"></canvas></div>
       </div>
     </div>
+
+    {% if quality_report %}
+    <h2 class="section-title" id="mcp-quality-heading">MCP Source Quality</h2>
+    <section id="mcp-quality" class="quality-panel" aria-label="MCP source quality">
+      <div class="quality-grid">
+        <div class="quality-metric">
+          <span class="quality-metric__label">MCP candidates</span>
+          <span class="quality-metric__value">{{ quality_report.summary.mcp_server_candidate_count|default(0) }}</span>
+        </div>
+        <div class="quality-metric">
+          <span class="quality-metric__label">Enabled tools</span>
+          <span class="quality-metric__value">{{ quality_report.summary.enabled_mcp_server_source_count|default(0) }}</span>
+        </div>
+        <div class="quality-metric">
+          <span class="quality-metric__label">Tool results</span>
+          <span class="quality-metric__value">{{ quality_report.summary.mcp_tool_result_events|default(0) }}</span>
+        </div>
+        <div class="quality-metric">
+          <span class="quality-metric__label">Metadata gaps</span>
+          <span class="quality-metric__value">{{ quality_report.summary.repository_metadata_gap_count|default(0) }}</span>
+        </div>
+        <div class="quality-metric">
+          <span class="quality-metric__label">Review items</span>
+          <span class="quality-metric__value">{{ quality_report.summary.daily_review_item_count|default(0) }}</span>
+        </div>
+      </div>
+      {% if quality_report.scope_note %}
+      <p class="article-card__summary">{{ quality_report.scope_note|e }}</p>
+      {% endif %}
+      {% if quality_report.daily_review_items %}
+      <ul class="quality-list">
+        {% for item in quality_report.daily_review_items[:8] %}
+        <li><strong>{{ item.reason|e }}</strong>{% if item.source %} - {{ item.source|e }}{% endif %}{% if item.repository %} / {{ item.repository|e }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="article-card__summary">No MCP quality review items in this run.</p>
+      {% endif %}
+    </section>
+    {% endif %}
 
     <!-- Entity Hits -->
     {% if entity_counts %}
@@ -666,6 +737,10 @@
       }
 
       if (!window.Chart) return;
+      Chart.defaults.color = "rgba(244,244,247,.76)";
+      Chart.defaults.borderColor = "rgba(244,244,247,.14)";
+      Chart.defaults.font.family = '"Pretendard Variable","Pretendard",system-ui,-apple-system,Segoe UI,sans-serif';
+      Chart.defaults.plugins.legend.labels.color = "rgba(244,244,247,.72)";
       window.buildAllCharts = function(filteredData) {
         if (filteredData) articles = filteredData;
 
@@ -731,7 +806,7 @@
             var x = c.chartArea.left + w / 2, y = c.chartArea.top + h / 2;
             c.ctx.save();
             c.ctx.font = "bold 24px sans-serif";
-            c.ctx.fillStyle = "rgba(15,23,42,.8)";
+            c.ctx.fillStyle = "rgba(244,244,247,.82)";
             c.ctx.textAlign = "center";
             c.ctx.textBaseline = "middle";
             c.ctx.fillText(pct + "%", x, y);
