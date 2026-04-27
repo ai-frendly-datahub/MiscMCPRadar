@@ -30,6 +30,19 @@ class Source:
     headers: dict[str, str] = field(default_factory=dict)
     rate_limit: float = 1.0  # 초당 요청 수
     section: str = ""
+    id: str = ""
+    enabled: bool = True
+    language: str = ""
+    country: str = ""
+    region: str = ""
+    trust_tier: str = "T3_professional"
+    weight: float = 1.0
+    content_type: str = "news"
+    collection_tier: str = "C1_rss"
+    producer_role: str = ""
+    info_purpose: list[str] = field(default_factory=list)
+    notes: str = ""
+    config: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

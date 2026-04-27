@@ -87,3 +87,15 @@ Radar-Template/
 - Data quality priority: `P3`
 
 이 Radar는 awesome list를 `T4_community` seed source로만 사용합니다. 각 MCP 서버의 실제 보안성, credential 요구, write action 여부는 linked GitHub repository metadata와 README를 별도로 검증해야 합니다.
+
+<!-- DATAHUB-OPS-AUDIT:START -->
+## DataHub Operations
+
+- CI/CD workflows: `deploy-pages.yml`, `health-check.yml`, `pr-checks.yml`, `radar-crawler.yml`, `release.yml`.
+- GitHub Pages visualization: `reports/index.html` (valid HTML); https://ai-frendly-datahub.github.io/MiscMCPRadar/.
+- Latest remote Pages check: HTTP 404, non-HTML.
+- Local workspace audit: 50 Python files parsed, 0 syntax errors.
+- Re-run audit from the workspace root: `python scripts/audit_ci_pages_readme.py --syntax-check --write`.
+- Latest audit report: `_workspace/2026-04-14_github_ci_pages_readme_audit.md`.
+- Latest Pages URL report: `_workspace/2026-04-14_github_pages_url_check.md`.
+<!-- DATAHUB-OPS-AUDIT:END -->

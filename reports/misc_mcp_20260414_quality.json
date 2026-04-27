@@ -1,0 +1,105 @@
+{
+  "category": "misc_mcp",
+  "generated_at": "2026-04-14T11:35:37.797428+00:00",
+  "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
+  "summary": {
+    "total_sources": 1,
+    "enabled_sources": 1,
+    "tracked_sources": 1,
+    "fresh_sources": 0,
+    "stale_sources": 0,
+    "missing_sources": 1,
+    "missing_event_sources": 0,
+    "unknown_event_date_sources": 0,
+    "not_tracked_sources": 0,
+    "skipped_disabled_sources": 0,
+    "collection_error_count": 0,
+    "mcp_signal_event_count": 0,
+    "directory_seed_source_count": 1,
+    "mcp_server_candidate_count": 0,
+    "enabled_mcp_server_source_count": 0,
+    "blocked_mcp_server_source_count": 0,
+    "real_transport_smoke_tested_source_count": 0,
+    "tool_allowlist_present_source_count": 0,
+    "credential_required_source_count": 0,
+    "repository_metadata_complete_source_count": 0,
+    "repository_metadata_gap_count": 0,
+    "security_activation_gate_count": 0,
+    "daily_review_item_count": 1,
+    "mcp_directory_entry_events": 0,
+    "mcp_tool_result_events": 0,
+    "linked_repository_metadata_events": 0,
+    "risk_scope_signal_events": 0
+  },
+  "sources": [
+    {
+      "source": "awesome-mcp-korea Miscellaneous",
+      "source_type": "github_readme_section",
+      "enabled": true,
+      "trust_tier": "T4_community",
+      "content_type": "mcp_directory",
+      "collection_tier": "C1_static_list",
+      "producer_role": "",
+      "info_purpose": [],
+      "tracked": true,
+      "event_model": "mcp_directory_entry",
+      "repository": "",
+      "activation_status": "",
+      "activation_gates": [],
+      "tools_count": 0,
+      "env_count": 0,
+      "repository_metadata_gaps": [
+        "repository",
+        "github_archived",
+        "github_license",
+        "github_pushed_at"
+      ],
+      "freshness_sla_days": 7.0,
+      "status": "missing",
+      "article_count": 0,
+      "event_count": 0,
+      "latest_event_at": null,
+      "age_days": null,
+      "latest_title": "",
+      "latest_url": "",
+      "latest_mcp_domain": [],
+      "latest_provider": [],
+      "latest_capability": [],
+      "latest_risk_scope": [],
+      "latest_required_field_proxy": {},
+      "errors": []
+    }
+  ],
+  "events": [],
+  "daily_review_items": [
+    {
+      "reason": "source_status_missing",
+      "source": "awesome-mcp-korea Miscellaneous",
+      "event_model": "mcp_directory_entry",
+      "detail": "Tracked MCP evidence source needs collection or freshness follow-up."
+    }
+  ],
+  "source_backlog": {
+    "operational_candidates": [
+      {
+        "id": "github_repository_metadata",
+        "name": "GitHub repository metadata enrichment",
+        "signal_type": "linked_repository_metadata",
+        "activation_gate": "rate-limit handling, repository canonicalization, and archived/license mapping"
+      },
+      {
+        "id": "mcp_registry_crosscheck",
+        "name": "MCP registry cross-check",
+        "signal_type": "mcp_registry_presence",
+        "activation_gate": "registry API availability and canonical package mapping"
+      },
+      {
+        "id": "security_advisory_crosscheck",
+        "name": "GitHub security advisory cross-check",
+        "signal_type": "security_risk",
+        "activation_gate": "advisory API coverage and false positive handling"
+      }
+    ]
+  },
+  "errors": []
+}

@@ -104,6 +104,42 @@ class RadarStorage:
                 pass
             raise StorageError("Failed to upsert articles") from exc
 
+    def _article_from_row(
+        self,
+        row: tuple[str, str, str, str, str | None, datetime | None, datetime | None, str | None],
+    ) -> Article:
+        category_value, source, title, link, summary, published, collected_at, raw_entities = row
+        published_at = published if isinstance(published, datetime) else None
+        collected = collected_at if isinstance(collected_at, datetime) else None
+
+        entities: dict[str, list[str]] = {}
+        if raw_entities:
+            try:
+                parsed_entities = cast(object, json.loads(raw_entities))
+                if isinstance(parsed_entities, dict):
+                    parsed_map = cast(dict[object, object], parsed_entities)
+                    entities = {}
+                    for name, keywords in parsed_map.items():
+                        if not isinstance(name, str) or not isinstance(keywords, list):
+                            continue
+                        normalized_keywords: list[str] = []
+                        for keyword in cast(list[object], keywords):
+                            normalized_keywords.append(str(keyword))
+                        entities[name] = normalized_keywords
+            except json.JSONDecodeError:
+                entities = {}
+
+        return Article(
+            title=str(title),
+            link=str(link),
+            summary=str(summary) if summary is not None else "",
+            published=published_at,
+            source=str(source),
+            category=str(category_value),
+            matched_entities=entities,
+            collected_at=collected,
+        )
+
     def recent_articles(self, category: str, *, days: int = 7, limit: int = 200) -> list[Article]:
         """최근 N일 내 기사 반환."""
         since = _utc_naive(datetime.now(UTC) - timedelta(days=days))
@@ -123,45 +159,30 @@ class RadarStorage:
             ],
             cur.fetchall(),
         )
+        return [self._article_from_row(row) for row in rows]
 
-        results: list[Article] = []
-        for row in rows:
-            category_value, source, title, link, summary, published, collected_at, raw_entities = (
-                row
-            )
-            published_at = published if isinstance(published, datetime) else None
-            collected = collected_at if isinstance(collected_at, datetime) else None
-
-            entities: dict[str, list[str]] = {}
-            if raw_entities:
-                try:
-                    parsed_entities = cast(object, json.loads(raw_entities))
-                    if isinstance(parsed_entities, dict):
-                        parsed_map = cast(dict[object, object], parsed_entities)
-                        entities = {}
-                        for name, keywords in parsed_map.items():
-                            if not isinstance(name, str) or not isinstance(keywords, list):
-                                continue
-                            normalized_keywords: list[str] = []
-                            for keyword in cast(list[object], keywords):
-                                normalized_keywords.append(str(keyword))
-                            entities[name] = normalized_keywords
-                except json.JSONDecodeError:
-                    entities = {}
-
-            results.append(
-                Article(
-                    title=str(title),
-                    link=str(link),
-                    summary=str(summary) if summary is not None else "",
-                    published=published_at,
-                    source=str(source),
-                    category=str(category_value),
-                    matched_entities=entities,
-                    collected_at=collected,
-                )
-            )
-        return results
+    def recent_articles_by_collected_at(
+        self, category: str, *, days: int = 7, limit: int = 500
+    ) -> list[Article]:
+        """Return recently collected rows even when source published dates are old or absent."""
+        since = _utc_naive(datetime.now(UTC) - timedelta(days=days))
+        cur = self.conn.execute(
+            """
+            SELECT category, source, title, link, summary, published, collected_at, entities_json
+            FROM articles
+            WHERE category = ? AND collected_at >= ?
+            ORDER BY collected_at DESC, COALESCE(published, collected_at) DESC
+            LIMIT ?
+            """,
+            [category, since, limit],
+        )
+        rows = cast(
+            list[
+                tuple[str, str, str, str, str | None, datetime | None, datetime | None, str | None]
+            ],
+            cur.fetchall(),
+        )
+        return [self._article_from_row(row) for row in rows]
 
     def delete_older_than(self, days: int) -> int:
         """보존 기간 밖 데이터 삭제."""
@@ -179,7 +200,13 @@ class RadarStorage:
         from .date_storage import snapshot_database
 
         snapshot_root = Path(snapshot_dir) if snapshot_dir else self.db_path.parent / "daily"
-        return snapshot_database(self.db_path, snapshot_root=snapshot_root)
+        _ = self.conn.execute("CHECKPOINT")
+        self.conn.close()
+        try:
+            return snapshot_database(self.db_path, snapshot_root=snapshot_root)
+        finally:
+            self.conn = duckdb.connect(str(self.db_path))
+            self._ensure_tables()
 
     def cleanup_old_snapshots(self, snapshot_dir: str | None = None, keep_days: int = 90) -> int:
         from .date_storage import cleanup_date_directories

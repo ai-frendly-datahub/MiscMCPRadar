@@ -15,6 +15,7 @@ permissions:
   checks: write
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   PYTHON_VERSION: "3.11"
 
 jobs:
@@ -63,7 +64,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage.xml
           flags: unittests

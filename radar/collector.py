@@ -15,6 +15,7 @@ import feedparser
 import requests
 
 from .exceptions import NetworkError, SourceError
+from .mcp_source import MCP_SOURCE_TYPES, collect_mcp_server_source
 from .models import Article, Source
 from .resilience import get_circuit_breaker_manager
 
@@ -98,6 +99,8 @@ def collect_sources(
     }
 
     def _collect_for_source(source: Source) -> tuple[list[Article], list[str]]:
+        if not source.enabled:
+            return [], []
         rate_limiters[source_hosts[source.name]].acquire()
         try:
             breaker = manager.get_breaker(source.name)
@@ -159,6 +162,13 @@ def _collect_single(
             limit=limit,
             timeout=timeout,
             session=session,
+        )
+    if source_type in MCP_SOURCE_TYPES:
+        return collect_mcp_server_source(
+            source,
+            category=category,
+            limit=limit,
+            timeout=timeout,
         )
     raise SourceError(source.name, f"Unsupported source type '{source.type}'")
 

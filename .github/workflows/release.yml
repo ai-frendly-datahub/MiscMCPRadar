@@ -10,6 +10,7 @@ permissions:
   packages: write
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   PYTHON_VERSION: "3.11"
 
 jobs:
@@ -46,7 +47,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body: |
             ## Changes

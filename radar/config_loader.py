@@ -40,6 +40,58 @@ def _string_value(raw: dict[str, object], key: str, default: str) -> str:
     return default
 
 
+def _bool_value(raw: dict[str, object], key: str, default: bool) -> bool:
+    value = raw.get(key)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y"}:
+            return True
+        if normalized in {"false", "0", "no", "n"}:
+            return False
+    return default
+
+
+def _float_value(raw: dict[str, object], key: str, default: float) -> float:
+    value = raw.get(key)
+    if isinstance(value, bool):
+        return default
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.strip())
+        except ValueError:
+            return default
+    return default
+
+
+def _string_list_value(raw: dict[str, object], key: str) -> list[str]:
+    value = raw.get(key)
+    values: list[object]
+    if isinstance(value, list):
+        values = cast(list[object], value)
+    elif isinstance(value, tuple | set):
+        values = list(cast(tuple[object, ...] | set[object], value))
+    elif isinstance(value, str) and value.strip():
+        values = [value]
+    else:
+        values = []
+    return [str(item).strip() for item in values if str(item).strip()]
+
+
+def _dict_value(raw: dict[str, object], key: str) -> dict[str, object]:
+    value = raw.get(key)
+    if isinstance(value, dict):
+        return {str(k): v for k, v in cast(dict[object, object], value).items()}
+    return {}
+
+
+def _string_dict_value(raw: dict[str, object], key: str) -> dict[str, str]:
+    return {k: str(v) for k, v in _dict_value(raw, key).items()}
+
+
 def _dict_items(value: object) -> list[dict[str, object]]:
     if not isinstance(value, list):
         return []
@@ -111,11 +163,51 @@ def load_category_config(category_name: str, categories_dir: Path | None = None)
 def _parse_source(entry: dict[str, object]) -> Source:
     if not entry:
         raise ValueError("Empty source entry in category config")
+    known_keys = {
+        "name",
+        "type",
+        "url",
+        "headers",
+        "rate_limit",
+        "section",
+        "id",
+        "enabled",
+        "language",
+        "country",
+        "region",
+        "trust_tier",
+        "weight",
+        "content_type",
+        "collection_tier",
+        "producer_role",
+        "info_purpose",
+        "notes",
+        "config",
+    }
+    config = _dict_value(entry, "config")
+    for key, value in entry.items():
+        if key not in known_keys:
+            config[key] = value
     return Source(
         name=_string_value(entry, "name", "Unnamed Source"),
         type=_string_value(entry, "type", "rss"),
         url=_string_value(entry, "url", ""),
+        headers=_string_dict_value(entry, "headers"),
+        rate_limit=_float_value(entry, "rate_limit", 1.0),
         section=_string_value(entry, "section", ""),
+        id=_string_value(entry, "id", ""),
+        enabled=_bool_value(entry, "enabled", True),
+        language=_string_value(entry, "language", ""),
+        country=_string_value(entry, "country", ""),
+        region=_string_value(entry, "region", ""),
+        trust_tier=_string_value(entry, "trust_tier", "T3_professional"),
+        weight=_float_value(entry, "weight", 1.0),
+        content_type=_string_value(entry, "content_type", "news"),
+        collection_tier=_string_value(entry, "collection_tier", "C1_rss"),
+        producer_role=_string_value(entry, "producer_role", ""),
+        info_purpose=_string_list_value(entry, "info_purpose"),
+        notes=_string_value(entry, "notes", ""),
+        config=config,
     )
 
 
@@ -156,6 +248,24 @@ def _resolve_env_refs(value: object) -> object:
     elif isinstance(value, list):
         return [_resolve_env_refs(item) for item in value]
     return value
+
+
+def load_category_quality_config(
+    category_name: str, categories_dir: Path | None = None
+) -> dict[str, object]:
+    """Load quality metadata from a category YAML."""
+    project_root = Path(__file__).resolve().parent.parent
+    base_dir = categories_dir or project_root / "config" / "categories"
+    config_file = Path(base_dir) / f"{category_name}.yaml"
+
+    if not config_file.exists():
+        raise FileNotFoundError(f"Category config not found: {config_file}")
+
+    raw = _read_yaml_dict(config_file)
+    return {
+        "data_quality": _dict_value(raw, "data_quality"),
+        "source_backlog": _dict_value(raw, "source_backlog"),
+    }
 
 
 def load_notification_config(

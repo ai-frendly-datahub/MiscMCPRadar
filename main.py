@@ -8,9 +8,11 @@ from typing import Any, cast
 from radar.analyzer import apply_entity_rules
 from radar.collector import collect_sources
 from radar.common.validators import validate_article
-from radar.config_loader import load_category_config, load_settings
+from radar.config_loader import load_category_config, load_category_quality_config, load_settings
 from radar.date_storage import apply_date_storage_policy
 from radar.models import Article
+from radar.quality_report import build_quality_report, write_quality_report
+from radar.ontology import annotate_articles_with_ontology
 from radar.raw_logger import RawLogger
 from radar.reporter import generate_index_html, generate_report
 from radar.search_index import SearchIndex
@@ -89,6 +91,7 @@ def run(
     """Execute the lightweight collect -> analyze -> report pipeline."""
     settings = load_settings(config_path)
     category_cfg = load_category_config(category, categories_dir=categories_dir)
+    quality_config = load_category_quality_config(category, categories_dir=categories_dir)
 
     print(
         f"[Radar] Collecting '{category_cfg.display_name}' from {len(category_cfg.sources)} sources..."
@@ -100,6 +103,13 @@ def run(
         category=category_cfg.category_name,
         limit_per_source=per_source_limit,
         timeout=timeout,
+    )
+    collected = annotate_articles_with_ontology(
+        collected,
+        repo_name="MiscMCPRadar",
+        sources_by_name={source.name: source for source in category_cfg.sources},
+        category_name=category_cfg.category_name,
+        search_from=Path(__file__),
     )
 
     raw_logger = RawLogger(settings.raw_data_dir)
@@ -134,6 +144,11 @@ def run(
     recent_articles: list[Article] = storage.recent_articles(
         category_cfg.category_name, days=recent_days
     )
+    quality_articles: list[Article] = storage.recent_articles_by_collected_at(
+        category_cfg.category_name,
+        days=max(recent_days, 14),
+        limit=max(500, per_source_limit * max(len(category_cfg.sources), 1) * 2),
+    )
     storage.close()
 
     matched_count = sum(1 for a in recent_articles if a.matched_entities)
@@ -149,6 +164,17 @@ def run(
         "matched_count": matched_count,
     }
 
+    quality_report = build_quality_report(
+        category=category_cfg,
+        articles=quality_articles,
+        errors=errors,
+        quality_config=quality_config,
+    )
+    quality_paths = write_quality_report(
+        quality_report,
+        output_dir=settings.report_dir,
+        category_name=category_cfg.category_name,
+    )
     output_path = settings.report_dir / f"{category_cfg.category_name}_report.html"
     _ = generate_report(
         category=cast(Any, category_cfg),
@@ -156,9 +182,11 @@ def run(
         output_path=output_path,
         stats=stats,
         errors=errors,
+        quality_report=quality_report,
     )
     _ = generate_index_html(settings.report_dir)
     print(f"[Radar] Report generated at {output_path}")
+    print(f"[Radar] Quality report generated at {quality_paths['latest']}")
     date_storage = apply_date_storage_policy(
         database_path=settings.database_path,
         raw_data_dir=settings.raw_data_dir,

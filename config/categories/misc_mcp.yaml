@@ -1,6 +1,5 @@
-category_name: "misc_mcp"
-display_name: "기타 MCP 레이더"
-
+category_name: misc_mcp
+display_name: 기타 MCP 레이더
 data_quality:
   priority: P3
   primary_motion: intelligence
@@ -9,141 +8,151 @@ data_quality:
     freshness_report: reports/misc_mcp_quality.json
     dated_freshness_report_pattern: reports/misc_mcp_YYYYMMDD_quality.json
     tracked_event_models:
-      - mcp_directory_entry
-      - linked_repository_metadata
-      - risk_scope_signal
+    - mcp_directory_entry
+    - linked_repository_metadata
+    - risk_scope_signal
   event_models:
     mcp_directory_entry:
       date_fields:
-        - collected_at
+      - collected_at
       required_fields:
-        - repository
-        - source_section
-        - source_url
+      - repository
+      - source_section
+      - source_url
     linked_repository_metadata:
       date_fields:
-        - pushed_at
-        - collected_at
+      - pushed_at
+      - collected_at
       required_fields:
-        - repository
-        - archived
-        - license
+      - repository
+      - archived
+      - license
     risk_scope_signal:
       date_fields:
-        - collected_at
+      - collected_at
       required_fields:
-        - repository
-        - risk_scope
-        - evidence_url
+      - repository
+      - risk_scope
+      - evidence_url
   canonical_keys:
     mcp_project:
-      - repository
-      - provider
-      - mcp_domain
+    - repository
+    - provider
+    - mcp_domain
   freshness_sla:
     directory_days: 7
     repository_metadata_days: 7
   quality_gates:
-    - awesome list는 community seed source로만 사용하고 보안성을 보증하지 않는다
-    - linked repository metadata로 archived/license/docs 여부를 교차 검증한다
-    - 주문, 메시지, 일정 등록, 위치, 문서 처리 도구는 high-risk signal로 분리한다
+  - awesome list는 community seed source로만 사용하고 보안성을 보증하지 않는다
+  - linked repository metadata로 archived/license/docs 여부를 교차 검증한다
+  - 주문, 메시지, 일정 등록, 위치, 문서 처리 도구는 high-risk signal로 분리한다
 source_backlog:
   operational_candidates:
-    - id: github_repository_metadata
-      name: GitHub repository metadata enrichment
-      signal_type: linked_repository_metadata
-      activation_gate: rate-limit handling, repository canonicalization, and archived/license mapping
-    - id: mcp_registry_crosscheck
-      name: MCP registry cross-check
-      signal_type: mcp_registry_presence
-      activation_gate: registry API availability and canonical package mapping
-    - id: security_advisory_crosscheck
-      name: GitHub security advisory cross-check
-      signal_type: security_risk
-      activation_gate: advisory API coverage and false positive handling
-
+  - id: github_repository_metadata
+    name: GitHub repository metadata enrichment
+    signal_type: linked_repository_metadata
+    activation_gate: rate-limit handling, repository canonicalization, and archived/license
+      mapping
+  - id: mcp_registry_crosscheck
+    name: MCP registry cross-check
+    signal_type: mcp_registry_presence
+    activation_gate: registry API availability and canonical package mapping
+  - id: security_advisory_crosscheck
+    name: GitHub security advisory cross-check
+    signal_type: security_risk
+    activation_gate: advisory API coverage and false positive handling
 sources:
-  - name: "awesome-mcp-korea Miscellaneous"
-    type: "github_readme_section"
-    url: "https://raw.githubusercontent.com/darjeeling/awesome-mcp-korea/main/README.md"
-    section: "Miscellaneous"
-    trust_tier: "T4_community"
-    collection_tier: "C1_static_list"
-    content_type: "mcp_directory"
-
+- name: awesome-mcp-korea Miscellaneous
+  type: github_readme_section
+  url: https://raw.githubusercontent.com/darjeeling/awesome-mcp-korea/main/README.md
+  enabled: false
+  section: Miscellaneous
+  trust_tier: T4_community
+  collection_tier: C1_static_list
+  content_type: mcp_directory
+  notes: 'DISABLED 2026-04-24: upstream awesome-mcp-korea README no longer contains
+    a ''Miscellaneous'' section, so the category currently has no live directory entries
+    to collect. Keep disabled until an upstream replacement section or equivalent
+    seed source is identified.'
+  config:
+    disabled_reason: upstream_section_missing
+    required_before_enable:
+    - replacement_section_or_seed_source
+    - collection_smoke
+    event_model: mcp_directory_entry
 entities:
-  - name: "MCPDomain"
-    display_name: "MCP 도메인"
-    keywords:
-      - "Miscellaneous"
-      - "other"
-      - "기타"
-  - name: "Provider"
-    display_name: "서비스 제공자"
-    keywords:
-      - "naver"
-      - "kakao"
-      - "kis"
-      - "krx"
-      - "dart"
-      - "kosis"
-      - "kma"
-      - "data.go.kr"
-      - "dooray"
-      - "naver works"
-      - "tourapi"
-      - "한국투자증권"
-      - "네이버"
-      - "카카오"
-      - "기상청"
-      - "공공데이터"
-  - name: "Capability"
-    display_name: "도구 기능"
-    keywords:
-      - "search"
-      - "lookup"
-      - "analysis"
-      - "analyze"
-      - "route"
-      - "order"
-      - "message"
-      - "calendar"
-      - "parse"
-      - "검색"
-      - "조회"
-      - "분석"
-      - "주문"
-      - "메신저"
-      - "일정"
-      - "파싱"
-      - "길찾기"
-  - name: "RiskScope"
-    display_name: "리스크 범위"
-    keywords:
-      - "api"
-      - "rest api"
-      - "api key"
-      - "credential"
-      - "order"
-      - "message"
-      - "calendar"
-      - "location"
-      - "document"
-      - "주문"
-      - "메신저 보내기"
-      - "일정 등록"
-      - "위치"
-      - "문서"
-      - "개인정보"
-  - name: "ProjectHealth"
-    display_name: "프로젝트 상태"
-    keywords:
-      - "mcp"
-      - "server"
-      - "github"
-      - "openapi"
-      - "api"
-      - "documentation"
-      - "서버"
-      - "도구"
-      - "문서"
+- name: MCPDomain
+  display_name: MCP 도메인
+  keywords:
+  - Miscellaneous
+  - other
+  - 기타
+- name: Provider
+  display_name: 서비스 제공자
+  keywords:
+  - naver
+  - kakao
+  - kis
+  - krx
+  - dart
+  - kosis
+  - kma
+  - data.go.kr
+  - dooray
+  - naver works
+  - tourapi
+  - 한국투자증권
+  - 네이버
+  - 카카오
+  - 기상청
+  - 공공데이터
+- name: Capability
+  display_name: 도구 기능
+  keywords:
+  - search
+  - lookup
+  - analysis
+  - analyze
+  - route
+  - order
+  - message
+  - calendar
+  - parse
+  - 검색
+  - 조회
+  - 분석
+  - 주문
+  - 메신저
+  - 일정
+  - 파싱
+  - 길찾기
+- name: RiskScope
+  display_name: 리스크 범위
+  keywords:
+  - api
+  - rest api
+  - api key
+  - credential
+  - order
+  - message
+  - calendar
+  - location
+  - document
+  - 주문
+  - 메신저 보내기
+  - 일정 등록
+  - 위치
+  - 문서
+  - 개인정보
+- name: ProjectHealth
+  display_name: 프로젝트 상태
+  keywords:
+  - mcp
+  - server
+  - github
+  - openapi
+  - api
+  - documentation
+  - 서버
+  - 도구
+  - 문서
