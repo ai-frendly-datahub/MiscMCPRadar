@@ -130,6 +130,111 @@ def build_article_ontology_metadata(
     return {key: value for key, value in metadata.items() if _has_value(value)}
 
 
+def _shadow_default_published_at(article: object) -> str | None:
+    value = getattr(article, "published", None)
+    if value is None:
+        return None
+    iso = getattr(value, "isoformat", None)
+    if callable(iso):
+        try:
+            return iso()
+        except (TypeError, ValueError):
+            return None
+    text = str(value).strip()
+    return text or None
+
+
+def _shadow_default_tags(article: object) -> list[str] | None:
+    matched = getattr(article, "matched_entities", None)
+    if not isinstance(matched, Mapping):
+        return None
+    keys = sorted({str(k).strip() for k in matched.keys() if str(k).strip()})
+    return keys or None
+
+
+_SHADOW_FIELD_EXTRACTORS = {
+    "source_name": "source",
+    "headline": "title",
+    "source_url": "link",
+    "summary": "summary",
+}
+
+
+def _shadow_build_event_model_payload(
+    article: object,
+    *,
+    repo_name: str,
+    event_model_key: str,
+    overrides: Mapping[str, object] | None,
+    runtime_contract_dir: Path | None,
+    search_from: Path | None,
+) -> dict[str, object] | None:
+    contract = load_runtime_contract(
+        repo_name,
+        runtime_contract_dir=runtime_contract_dir,
+        search_from=search_from,
+    )
+    if contract is None:
+        return None
+    field_specs = contract.get("event_model_field_specs")
+    if not isinstance(field_specs, Mapping):
+        return None
+    spec = field_specs.get(event_model_key.strip())
+    if not isinstance(spec, Mapping):
+        return None
+    declared: list[str] = []
+    seen: set[str] = set()
+    for fname in [*(spec.get("required_fields") or []), *(spec.get("optional_fields") or [])]:
+        if not isinstance(fname, str) or not fname.strip() or fname in seen:
+            continue
+        seen.add(fname)
+        declared.append(fname)
+    overrides_map: Mapping[str, object] = overrides or {}
+    payload: dict[str, object] = {}
+    for fname in declared:
+        if fname in overrides_map:
+            value = overrides_map[fname]
+        elif fname == "published_at":
+            value = _shadow_default_published_at(article)
+        elif fname == "tags":
+            value = _shadow_default_tags(article)
+        elif fname in _SHADOW_FIELD_EXTRACTORS:
+            attr = _SHADOW_FIELD_EXTRACTORS[fname]
+            value = getattr(article, attr, None)
+            if isinstance(value, str):
+                value = value.strip() or None
+        else:
+            value = None
+        if value is None:
+            continue
+        if isinstance(value, str) and not value:
+            continue
+        if isinstance(value, (list, tuple)) and not value:
+            continue
+        payload[fname] = list(value) if isinstance(value, tuple) else value
+    return payload
+
+
+
+
+def _shadow_extract_source_payload_overrides(source: object) -> Mapping[str, object] | None:
+    if source is None:
+        return None
+    config = getattr(source, "config", None)
+    if not isinstance(config, Mapping):
+        return None
+    raw = config.get("event_model_payload_overrides")
+    if not isinstance(raw, Mapping):
+        return None
+    cleaned: dict[str, object] = {}
+    for key, value in raw.items():
+        normalized_key = str(key).strip()
+        if not normalized_key:
+            continue
+        cleaned[normalized_key] = value
+    return cleaned or None
+
+
 def annotate_articles_with_ontology(
     articles: list[Any],
     *,
@@ -138,7 +243,14 @@ def annotate_articles_with_ontology(
     category_name: str | None = None,
     runtime_contract_dir: Path | None = None,
     search_from: Path | None = None,
+    attach_event_model_payload: bool = False,
+    payload_overrides_by_source: Mapping[str, Mapping[str, object]] | None = None,
+    strict_enums: bool = False,  # noqa: ARG001 — shadow does not enforce enums yet
 ) -> list[Any]:
+    explicit_overrides = payload_overrides_by_source is not None
+    overrides_table: Mapping[str, Mapping[str, object]] = (
+        payload_overrides_by_source if payload_overrides_by_source else {}
+    )
     for article in articles:
         source_name = str(getattr(article, "source", "") or "").strip()
         source = sources_by_name.get(source_name)
@@ -151,8 +263,28 @@ def annotate_articles_with_ontology(
             runtime_contract_dir=runtime_contract_dir,
             search_from=search_from,
         )
-        if metadata is not None:
-            setattr(article, "ontology", metadata)
+        if metadata is None:
+            continue
+        if (
+            attach_event_model_payload
+            and source_event_model
+            and metadata.get("event_model_id")
+        ):
+            if explicit_overrides:
+                source_overrides = overrides_table.get(source_name)
+            else:
+                source_overrides = _shadow_extract_source_payload_overrides(source)
+            payload = _shadow_build_event_model_payload(
+                article,
+                repo_name=repo_name,
+                event_model_key=source_event_model,
+                overrides=source_overrides,
+                runtime_contract_dir=runtime_contract_dir,
+                search_from=search_from,
+            )
+            if payload:
+                metadata["event_model_payload"] = payload
+        setattr(article, "ontology", metadata)
     return articles
 
 
