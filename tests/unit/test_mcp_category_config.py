@@ -42,6 +42,27 @@ def test_mcp_category_config_uses_readme_section_source() -> None:
     }
 
 
+def test_mcp_category_config_has_registry_replacement_candidate() -> None:
+    category = load_category_config(_category_name())
+    registry_sources = [
+        source for source in category.sources if source.type == "mcp_registry_search"
+    ]
+
+    assert len(registry_sources) == 1
+    source = registry_sources[0]
+    assert source.enabled is False
+    assert source.url == "https://registry.modelcontextprotocol.io/v0.1/servers"
+    assert source.collection_tier == "C2_registry_api"
+    assert source.content_type == "mcp_directory"
+    assert source.config["disabled_reason"] == "awaiting_smoke_test"
+    assert source.config["search_terms"] == ["korea", "korean", "south-korea"]
+    assert source.config["required_before_enable"] == [
+        "registry_api_smoke",
+        "domain_dedup_with_mcp_radar_repos",
+        "repository_metadata_enrichment_mapping",
+    ]
+
+
 def test_mcp_category_config_matches_section_entries() -> None:
     category = load_category_config(_category_name())
     seed_source = _seed_source(category)
