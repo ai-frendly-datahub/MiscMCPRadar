@@ -1,6 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
+import os
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
@@ -17,6 +18,35 @@ TRACKED_EVENT_MODEL_ORDER = [
     "risk_scope_signal",
 ]
 TRACKED_EVENT_MODELS = set(TRACKED_EVENT_MODEL_ORDER)
+
+ACTIVATION_GATE_PRIORITY = [
+    "command_or_endpoint_unresolved",
+    "env_secret_documentation_required",
+    "tool_resource_allowlist_required",
+    "upstream_runtime_config_patch_required",
+    "reliable_stdio_initialize_required",
+    "upstream_startup_regression_review_required",
+    "bounded_real_transport_preflight_required",
+    "bootstrap_performance_review_required",
+    "prebuilt_cache_readiness_required",
+    "fake_transport_smoke_test_required",
+    "real_transport_smoke_test_required",
+    "registry_crosscheck_required",
+    "risk_scope_review_required",
+    "production_monitoring_required",
+    "production_enablement_review_required",
+]
+RUNTIME_REVIEW_GATES = {
+    "upstream_runtime_config_patch_required",
+    "reliable_stdio_initialize_required",
+    "upstream_startup_regression_review_required",
+    "bounded_real_transport_preflight_required",
+    "bootstrap_performance_review_required",
+    "prebuilt_cache_readiness_required",
+    "production_monitoring_required",
+    "production_enablement_review_required",
+}
+
 
 
 def build_quality_report(
@@ -39,6 +69,14 @@ def build_quality_report(
         sources=category.sources,
         tracked_event_models=tracked_event_models,
     )
+    events.extend(
+        _build_repository_metadata_event_rows(
+            sources=category.sources,
+            tracked_event_models=tracked_event_models,
+            generated_at=generated,
+            freshness_sla=freshness_sla,
+        )
+    )
     source_rows = [
         _build_source_row(
             source=source,
@@ -52,10 +90,35 @@ def build_quality_report(
         for source in category.sources
     ]
     daily_review_items = _build_daily_review_items(source_rows, category.sources)
+    repository_metadata_rows = [
+        metadata
+        for row in source_rows
+        if (metadata := _mapping(row.get("repository_metadata")))
+    ]
+    repository_metadata_status_counts = Counter(
+        str(row.get("status") or "unknown") for row in repository_metadata_rows
+    )
 
     status_counts = Counter(str(row["status"]) for row in source_rows)
     event_counts = Counter(str(row["event_model"]) for row in events)
     mcp_server_sources = [source for source in category.sources if _is_mcp_server_source(source)]
+
+    env_preflight_rows = [_env_preflight_status(source) for source in mcp_server_sources]
+    activation_gate_sets = [_activation_gate_set(source) for source in mcp_server_sources]
+    activation_gate_counts = Counter(gate for gates in activation_gate_sets for gate in gates)
+    activation_command_discovery_status_counts = Counter(
+        status
+        for source in mcp_server_sources
+        if (status := str(source.config.get("command_discovery_status") or ""))
+    )
+    activation_command_discovery_resolved_count = sum(
+        count
+        for status, count in activation_command_discovery_status_counts.items()
+        if status.startswith("resolved_")
+    )
+    runtime_review_source_count = sum(
+        1 for gates in activation_gate_sets if gates & RUNTIME_REVIEW_GATES
+    )
     summary = {
         "total_sources": len(source_rows),
         "enabled_sources": sum(1 for row in source_rows if row["enabled"]),
@@ -84,14 +147,121 @@ def build_quality_report(
         "credential_required_source_count": sum(
             1 for source in mcp_server_sources if bool(source.config.get("env"))
         ),
+        "env_preflight_required_source_count": sum(
+            1 for row in env_preflight_rows if row["required_env"]
+        ),
+        "env_preflight_ready_source_count": sum(
+            1 for row in env_preflight_rows if row["status"] == "ready"
+        ),
+        "env_preflight_missing_source_count": sum(
+            1 for row in env_preflight_rows if row["status"] == "missing_required_env"
+        ),
+        "env_preflight_missing_var_count": sum(
+            len(row["missing_env"]) for row in env_preflight_rows
+        ),
+        "env_preflight_not_required_source_count": sum(
+            1 for row in env_preflight_rows if row["status"] == "not_required"
+        ),
         "repository_metadata_complete_source_count": sum(
             1 for source in mcp_server_sources if _repository_metadata_complete(source)
         ),
         "repository_metadata_gap_count": sum(
             len(_repository_metadata_gaps(source)) for source in mcp_server_sources
         ),
+        "repository_metadata_fresh_source_count": repository_metadata_status_counts.get("fresh", 0),
+        "repository_metadata_stale_source_count": repository_metadata_status_counts.get("stale", 0),
+        "repository_metadata_incomplete_source_count": repository_metadata_status_counts.get(
+            "incomplete", 0
+        ),
+        "repository_metadata_missing_checked_at_source_count": repository_metadata_status_counts.get(
+            "missing_checked_at", 0
+        ),
+        "repository_metadata_review_required_count": sum(
+            count
+            for status, count in repository_metadata_status_counts.items()
+            if status != "fresh"
+        ),
+        "repository_docs_present_source_count": sum(
+            1
+            for row in repository_metadata_rows
+            if bool(row.get("github_readme_present") or row.get("github_docs_present"))
+        ),
+        "repository_docs_missing_source_count": sum(
+            1 for row in repository_metadata_rows if row.get("github_docs_present") is False
+        ),
+        "repository_security_policy_present_source_count": sum(
+            1 for row in repository_metadata_rows if row.get("github_security_policy_present") is True
+        ),
+        "repository_security_advisory_checked_source_count": sum(
+            1
+            for row in repository_metadata_rows
+            if str(row.get("github_security_advisory_access_status") or "").startswith("checked")
+        ),
+        "repository_security_advisory_total_count": sum(
+            _as_int(row.get("github_security_advisory_count"), 0)
+            for row in repository_metadata_rows
+        ),
+        "repository_security_advisory_open_source_count": sum(
+            1
+            for row in repository_metadata_rows
+            if _as_int(row.get("github_security_advisory_open_count"), 0) > 0
+        ),
+        "repository_security_enrichment_review_required_count": sum(
+            1
+            for row in repository_metadata_rows
+            if row.get("github_docs_present") is False
+            or not str(row.get("github_security_advisory_access_status") or "").startswith("checked")
+            or _as_int(row.get("github_security_advisory_open_count"), 0) > 0
+        ),
         "security_activation_gate_count": sum(
             len(_list(source.config.get("activation_gates"))) for source in mcp_server_sources
+        ),
+
+        "activation_gate_source_count": sum(1 for gates in activation_gate_sets if gates),
+        "activation_gate_total_count": sum(len(gates) for gates in activation_gate_sets),
+        "activation_risk_scope_review_required_source_count": activation_gate_counts.get(
+            "risk_scope_review_required", 0
+        ),
+        "activation_command_unresolved_source_count": activation_gate_counts.get(
+            "command_or_endpoint_unresolved", 0
+        ),
+        "activation_command_discovery_checked_source_count": sum(
+            activation_command_discovery_status_counts.values()
+        ),
+        "activation_command_discovery_resolved_source_count": (
+            activation_command_discovery_resolved_count
+        ),
+        "activation_command_discovery_unresolved_source_count": (
+            sum(activation_command_discovery_status_counts.values())
+            - activation_command_discovery_resolved_count
+        ),
+        "activation_command_discovery_multi_server_ambiguous_source_count": (
+            activation_command_discovery_status_counts.get("multi_server_ambiguous", 0)
+        ),
+        "activation_command_discovery_status_counts": dict(
+            sorted(activation_command_discovery_status_counts.items())
+        ),
+        "activation_env_secret_required_source_count": activation_gate_counts.get(
+            "env_secret_documentation_required", 0
+        ),
+        "activation_tool_allowlist_required_source_count": activation_gate_counts.get(
+            "tool_resource_allowlist_required", 0
+        ),
+        "activation_registry_crosscheck_required_source_count": activation_gate_counts.get(
+            "registry_crosscheck_required", 0
+        ),
+        "activation_fake_transport_required_source_count": activation_gate_counts.get(
+            "fake_transport_smoke_test_required", 0
+        ),
+        "activation_real_transport_required_source_count": activation_gate_counts.get(
+            "real_transport_smoke_test_required", 0
+        ),
+        "activation_runtime_review_required_source_count": runtime_review_source_count,
+        "activation_ready_for_fake_transport_source_count": sum(
+            1
+            for source in mcp_server_sources
+            if str(source.config.get("activation_status") or "")
+            == "candidate_ready_for_fake_transport_test"
         ),
         "daily_review_item_count": len(daily_review_items),
     }
@@ -165,6 +335,74 @@ def _build_event_rows(
     return rows
 
 
+def _build_repository_metadata_event_rows(
+    *,
+    sources: list[Source],
+    tracked_event_models: set[str],
+    generated_at: datetime,
+    freshness_sla: Mapping[str, object],
+) -> list[dict[str, Any]]:
+    if "linked_repository_metadata" not in tracked_event_models:
+        return []
+
+    rows: list[dict[str, Any]] = []
+    for source in sources:
+        if not _is_mcp_server_source(source):
+            continue
+        metadata = _repository_metadata_status(
+            source=source,
+            generated_at=generated_at,
+            freshness_sla=freshness_sla,
+        )
+        repository = str(metadata.get("repository") or "")
+        event_at = (
+            _parse_datetime(str(metadata.get("github_pushed_at") or ""))
+            or _parse_datetime(str(metadata.get("checked_at") or ""))
+            or generated_at
+        )
+        rows.append(
+            {
+                "source": source.name,
+                "event_model": "linked_repository_metadata",
+                "title": f"{repository or source.name} repository metadata",
+                "url": _repository_url(source),
+                "event_at": event_at.isoformat(),
+                "mcp_domain": [],
+                "provider": [],
+                "capability": [],
+                "risk_scope": [],
+                "project_health": [],
+                "required_field_proxy": {
+                    "repository": bool(repository),
+                    "archived": metadata.get("github_archived") is not None,
+                    "license": bool(metadata.get("github_license")),
+                    "docs": bool(metadata.get("github_docs_present")),
+                    "security_advisory_check": str(
+                        metadata.get("github_security_advisory_access_status") or ""
+                    ).startswith("checked"),
+                },
+                "repository": repository,
+                "repository_metadata_status": metadata.get("status"),
+                "repository_metadata_checked_at": metadata.get("checked_at"),
+                "github_pushed_at": metadata.get("github_pushed_at"),
+                "github_license": metadata.get("github_license"),
+                "github_archived": metadata.get("github_archived"),
+                "github_readme_present": metadata.get("github_readme_present"),
+                "github_docs_present": metadata.get("github_docs_present"),
+                "github_docs_paths": metadata.get("github_docs_paths"),
+                "github_security_policy_present": metadata.get("github_security_policy_present"),
+                "github_security_advisory_access_status": metadata.get(
+                    "github_security_advisory_access_status"
+                ),
+                "github_security_advisory_count": metadata.get("github_security_advisory_count"),
+                "github_security_advisory_open_count": metadata.get(
+                    "github_security_advisory_open_count"
+                ),
+            }
+        )
+    return rows
+
+
 def _build_source_row(
     *,
     source: Source,
@@ -199,6 +437,12 @@ def _build_source_row(
         sla_days=sla_days,
         age_days=age_days,
     )
+    repository_metadata = _repository_metadata_status(
+        source=source,
+        generated_at=generated_at,
+        freshness_sla=freshness_sla,
+    )
+    env_preflight = _env_preflight_status(source)
 
     return {
         "source": source.name,
@@ -214,9 +458,22 @@ def _build_source_row(
         "repository": _source_repository(source),
         "activation_status": str(source.config.get("activation_status", "")),
         "activation_gates": _list(source.config.get("activation_gates")),
+        "activation_gate_count": len(_activation_gate_set(source)),
+        "activation_next_gate": _activation_next_gate(source),
+        "activation_command_discovery_status": str(
+            source.config.get("command_discovery_status", "")
+        ),
+        "activation_command_discovery_checked_at": str(
+            source.config.get("command_discovery_checked_at", "")
+        ),
         "tools_count": len(_list(source.config.get("tools"))),
-        "env_count": len(_list(source.config.get("env"))),
-        "repository_metadata_gaps": _repository_metadata_gaps(source),
+        "env_count": len(_env_required_names(source)),
+        "env_preflight_status": env_preflight["status"],
+        "env_required_names": env_preflight["required_env"],
+        "env_missing_names": env_preflight["missing_env"],
+        "repository_metadata_gaps": _list(repository_metadata.get("missing_fields"))
+        or _repository_metadata_gaps(source),
+        "repository_metadata": repository_metadata,
         "freshness_sla_days": sla_days,
         "status": status,
         "article_count": len(source_articles),
@@ -260,6 +517,17 @@ def _build_daily_review_items(
             continue
         repository = _source_repository(source)
         activation_status = str(source.config.get("activation_status", ""))
+        env_preflight = _env_preflight_status(source)
+        if env_preflight["status"] == "missing_required_env":
+            items.append(
+                {
+                    "reason": "mcp_env_preflight_missing",
+                    "source": source_name,
+                    "repository": repository,
+                    "missing_env": env_preflight["missing_env"],
+                    "activation_status": activation_status,
+                }
+            )
         if not source.enabled:
             items.append(
                 {
@@ -279,7 +547,29 @@ def _build_daily_review_items(
                     "activation_status": activation_status,
                 }
             )
-        metadata_gaps = _repository_metadata_gaps(source)
+        repository_metadata = _mapping(row.get("repository_metadata"))
+        metadata_status = str(repository_metadata.get("status") or "")
+        if metadata_status == "stale":
+            items.append(
+                {
+                    "reason": "repository_metadata_stale",
+                    "source": source_name,
+                    "repository": repository,
+                    "checked_at": repository_metadata.get("checked_at", ""),
+                    "age_days": repository_metadata.get("age_days"),
+                    "freshness_sla_days": repository_metadata.get("freshness_sla_days"),
+                }
+            )
+        elif metadata_status == "missing_checked_at":
+            items.append(
+                {
+                    "reason": "repository_metadata_missing_checked_at",
+                    "source": source_name,
+                    "repository": repository,
+                    "detail": "Repository metadata exists but has no metadata_checked_at timestamp.",
+                }
+            )
+        metadata_gaps = _list(repository_metadata.get("missing_fields")) or _repository_metadata_gaps(source)
         if metadata_gaps:
             items.append(
                 {
@@ -287,6 +577,41 @@ def _build_daily_review_items(
                     "source": source_name,
                     "repository": repository,
                     "missing_fields": metadata_gaps,
+                    "repository_metadata_status": metadata_status,
+                }
+            )
+        if repository_metadata.get("github_docs_present") is False:
+            items.append(
+                {
+                    "reason": "repository_docs_gap",
+                    "source": source_name,
+                    "repository": repository,
+                    "detail": "Repository README/docs were not found during docs/advisory audit.",
+                }
+            )
+        advisory_status = str(
+            repository_metadata.get("github_security_advisory_access_status") or ""
+        )
+        if advisory_status and not advisory_status.startswith("checked"):
+            items.append(
+                {
+                    "reason": "repository_security_advisory_unchecked",
+                    "source": source_name,
+                    "repository": repository,
+                    "access_status": advisory_status,
+                    "detail": "Repository security advisory endpoint was not fully checked.",
+                }
+            )
+        advisory_open_count = _as_int(
+            repository_metadata.get("github_security_advisory_open_count"), 0
+        )
+        if advisory_open_count > 0:
+            items.append(
+                {
+                    "reason": "repository_security_advisory_open",
+                    "source": source_name,
+                    "repository": repository,
+                    "open_advisory_count": advisory_open_count,
                 }
             )
     return items[:50]
@@ -383,6 +708,63 @@ def _is_mcp_server_source(source: Source) -> bool:
     }
 
 
+
+def _env_required_names(source: Source) -> list[str]:
+    raw = source.config.get("env")
+    if isinstance(raw, Mapping):
+        return [str(name).strip() for name in raw if str(name).strip()]
+    return [str(name).strip() for name in _list(raw) if str(name).strip()]
+
+
+def _env_resolved_values(source: Source) -> dict[str, str]:
+    raw = source.config.get("env")
+    if isinstance(raw, list):
+        return {str(name).strip(): os.environ.get(str(name).strip(), "") for name in raw if str(name).strip()}
+    if not isinstance(raw, Mapping):
+        return {}
+
+    values: dict[str, str] = {}
+    for key, raw_value in raw.items():
+        env_name = str(key).strip()
+        if not env_name:
+            continue
+        text_value = "" if raw_value is None else str(raw_value)
+        if text_value.startswith("${") and text_value.endswith("}"):
+            values[env_name] = os.environ.get(text_value[2:-1], "")
+        else:
+            values[env_name] = text_value
+    return values
+
+
+def _env_missing_names(source: Source) -> list[str]:
+    values = _env_resolved_values(source)
+    return [name for name in _env_required_names(source) if not values.get(name, "").strip()]
+
+
+def _env_preflight_status(source: Source) -> dict[str, Any]:
+    required = _env_required_names(source)
+    missing = _env_missing_names(source)
+    if not required:
+        status = "not_required"
+    elif missing:
+        status = "missing_required_env"
+    else:
+        status = "ready"
+    return {"status": status, "required_env": required, "missing_env": missing}
+
+
+def _activation_gate_set(source: Source) -> set[str]:
+    return set(_list(source.config.get("activation_gates")))
+
+
+def _activation_next_gate(source: Source) -> str:
+    gates = _activation_gate_set(source)
+    for gate in ACTIVATION_GATE_PRIORITY:
+        if gate in gates:
+            return gate
+    return sorted(gates)[0] if gates else ""
+
+
 def _source_repository(source: Source) -> str:
     raw = source.config.get("repository")
     if isinstance(raw, str) and raw.strip():
@@ -409,6 +791,75 @@ def _repository_metadata_gaps(source: Source) -> list[str]:
     if not source.config.get("github_pushed_at"):
         gaps.append("github_pushed_at")
     return gaps
+
+
+def _repository_metadata_status(
+    *,
+    source: Source,
+    generated_at: datetime,
+    freshness_sla: Mapping[str, object],
+) -> dict[str, Any]:
+    if not _is_mcp_server_source(source):
+        return {}
+
+    missing_fields = _repository_metadata_gaps(source)
+    checked_at = _parse_datetime(str(source.config.get("metadata_checked_at") or ""))
+    sla_days = _source_sla_days(source, "linked_repository_metadata", freshness_sla)
+    age_days = _age_days(generated_at, checked_at) if checked_at else None
+
+    if missing_fields:
+        status = "incomplete"
+    elif checked_at is None:
+        status = "missing_checked_at"
+    elif sla_days is not None and age_days is not None and age_days > sla_days:
+        status = "stale"
+    else:
+        status = "fresh"
+
+    return {
+        "status": status,
+        "repository": _source_repository(source),
+        "checked_at": checked_at.isoformat() if checked_at else "",
+        "age_days": round(age_days, 2) if age_days is not None else None,
+        "freshness_sla_days": sla_days,
+        "missing_fields": missing_fields,
+        "github_pushed_at": str(source.config.get("github_pushed_at") or ""),
+        "github_license": str(source.config.get("github_license") or ""),
+        "github_archived": source.config.get("github_archived"),
+        "github_disabled": source.config.get("github_disabled"),
+        "docs_advisory_checked_at": str(source.config.get("docs_advisory_checked_at") or ""),
+        "github_readme_present": source.config.get("github_readme_present"),
+        "github_readme_path": str(source.config.get("github_readme_path") or ""),
+        "github_docs_present": source.config.get("github_docs_present"),
+        "github_docs_paths": _list(source.config.get("github_docs_paths")),
+        "github_security_policy_present": source.config.get("github_security_policy_present"),
+        "github_security_policy_paths": _list(source.config.get("github_security_policy_paths")),
+        "github_security_advisory_access_status": str(
+            source.config.get("github_security_advisory_access_status") or ""
+        ),
+        "github_security_advisory_count": _as_int(
+            source.config.get("github_security_advisory_count"), 0
+        ),
+        "github_security_advisory_open_count": _as_int(
+            source.config.get("github_security_advisory_open_count"), 0
+        ),
+        "github_security_advisory_published_count": _as_int(
+            source.config.get("github_security_advisory_published_count"), 0
+        ),
+        "github_security_advisory_state_counts": dict(
+            _mapping(source.config.get("github_security_advisory_state_counts"))
+        ),
+        "github_security_advisory_ids": _list(source.config.get("github_security_advisory_ids")),
+    }
+
+
+def _repository_url(source: Source) -> str:
+    if source.url:
+        return source.url
+    repository = _source_repository(source)
+    if repository:
+        return f"https://github.com/{repository}"
+    return ""
 
 
 def _source_sla_days(
@@ -502,8 +953,29 @@ def _dict(value: Mapping[str, object], key: str) -> Mapping[str, object]:
     return {}
 
 
+def _mapping(value: object) -> Mapping[str, Any]:
+    if isinstance(value, Mapping):
+        return {str(k): v for k, v in value.items()}
+    return {}
+
+
 def _list(value: object) -> list[Any]:
     return value if isinstance(value, list) else []
+
+
+def _as_int(value: object, default: int) -> int:
+    if isinstance(value, bool):
+        return default
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            return default
+    return default
 
 
 def _as_float(value: object) -> float | None:

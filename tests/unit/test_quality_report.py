@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -12,6 +13,40 @@ def _category_name() -> str:
     configs = sorted(Path("config/categories").glob("*.yaml"))
     assert len(configs) == 1
     return configs[0].stem
+
+
+def _env_required_names(source) -> list[str]:
+    raw = source.config.get("env")
+    if isinstance(raw, dict):
+        return [str(name).strip() for name in raw if str(name).strip()]
+    if isinstance(raw, list):
+        return [str(name).strip() for name in raw if str(name).strip()]
+    return []
+
+
+def _env_resolved_values(source) -> dict[str, str]:
+    raw = source.config.get("env")
+    if isinstance(raw, list):
+        return {str(name).strip(): os.environ.get(str(name).strip(), "") for name in raw if str(name).strip()}
+    if not isinstance(raw, dict):
+        return {}
+
+    values: dict[str, str] = {}
+    for key, raw_value in raw.items():
+        env_name = str(key).strip()
+        if not env_name:
+            continue
+        text_value = "" if raw_value is None else str(raw_value)
+        if text_value.startswith("${") and text_value.endswith("}"):
+            values[env_name] = os.environ.get(text_value[2:-1], "")
+        else:
+            values[env_name] = text_value
+    return values
+
+
+def _env_missing_names(source) -> list[str]:
+    values = _env_resolved_values(source)
+    return [name for name in _env_required_names(source) if not values.get(name, "").strip()]
 
 
 def test_quality_report_tracks_directory_and_risk_scope_events() -> None:
@@ -57,10 +92,81 @@ def test_quality_report_tracks_directory_and_risk_scope_events() -> None:
     assert summary["blocked_mcp_server_source_count"] == sum(
         1 for source in mcp_sources if not source.enabled
     )
+    expected_activation_gates = [
+        gate
+        for source in mcp_sources
+        for gate in source.config.get("activation_gates", [])
+    ]
+    expected_activation_gate_sets = [
+        set(source.config.get("activation_gates", [])) for source in mcp_sources
+    ]
+    assert summary["activation_gate_total_count"] == len(expected_activation_gates)
+    assert summary["activation_gate_source_count"] == sum(
+        1 for gates in expected_activation_gate_sets if gates
+    )
+    assert summary["activation_command_unresolved_source_count"] == sum(
+        1 for gates in expected_activation_gate_sets if "command_or_endpoint_unresolved" in gates
+    )
+    expected_command_discovery_statuses = [
+        str(source.config.get("command_discovery_status") or "")
+        for source in mcp_sources
+        if source.config.get("command_discovery_status")
+    ]
+    expected_command_discovery_resolved = sum(
+        1 for status in expected_command_discovery_statuses if status.startswith("resolved_")
+    )
+    assert summary["activation_command_discovery_checked_source_count"] == len(
+        expected_command_discovery_statuses
+    )
+    assert (
+        summary["activation_command_discovery_resolved_source_count"]
+        == expected_command_discovery_resolved
+    )
+    assert summary["activation_command_discovery_unresolved_source_count"] == (
+        len(expected_command_discovery_statuses) - expected_command_discovery_resolved
+    )
+    assert (
+        summary["activation_command_discovery_multi_server_ambiguous_source_count"]
+        == expected_command_discovery_statuses.count("multi_server_ambiguous")
+    )
+    assert summary["activation_command_discovery_status_counts"] == {
+        status: expected_command_discovery_statuses.count(status)
+        for status in sorted(set(expected_command_discovery_statuses))
+    }
+    assert summary["activation_env_secret_required_source_count"] == sum(
+        1 for gates in expected_activation_gate_sets if "env_secret_documentation_required" in gates
+    )
+    assert summary["activation_tool_allowlist_required_source_count"] == sum(
+        1 for gates in expected_activation_gate_sets if "tool_resource_allowlist_required" in gates
+    )
+    expected_env_sources = [source for source in mcp_sources if _env_required_names(source)]
+    expected_env_missing_sources = [
+        source for source in expected_env_sources if _env_missing_names(source)
+    ]
+    expected_env_missing_vars = sum(
+        len(_env_missing_names(source)) for source in expected_env_sources
+    )
+    assert summary["env_preflight_required_source_count"] == len(expected_env_sources)
+    assert summary["env_preflight_missing_source_count"] == len(expected_env_missing_sources)
+    assert summary["env_preflight_missing_var_count"] == expected_env_missing_vars
+    assert (
+        summary["env_preflight_ready_source_count"]
+        + summary["env_preflight_missing_source_count"]
+        + summary["env_preflight_not_required_source_count"]
+        == len(mcp_sources)
+    )
+    source_rows_by_name = {row["source"]: row for row in report["sources"]}
+    for mcp_source in mcp_sources:
+        mcp_row = source_rows_by_name[mcp_source.name]
+        assert mcp_row["env_count"] == len(_env_required_names(mcp_source))
+        assert mcp_row["env_required_names"] == _env_required_names(mcp_source)
+        assert mcp_row["env_missing_names"] == _env_missing_names(mcp_source)
     assert "daily_review_item_count" in summary
 
     source_row = report["sources"][0]
     assert source_row["event_model"] == "mcp_directory_entry"
+    assert source_row["activation_gate_count"] == 0
+    assert source_row["activation_next_gate"] == ""
     assert source_row["status"] == "skipped_disabled"
     assert source_row["trust_tier"] == "T4_community"
     assert source_row["freshness_sla_days"] == 7.0

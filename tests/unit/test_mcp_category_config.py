@@ -115,6 +115,24 @@ def test_mcp_server_sources_are_disabled_metadata_candidates() -> None:
         assert source.config["repository"]
         assert isinstance(source.config.get("tools", []), list)
         assert isinstance(source.config.get("resources", []), list)
+        assert source.config["docs_advisory_audit_status"] == "passed"
+        assert (
+            source.config["docs_advisory_audit_artifact"]
+            == "_workspace/2026-04-30_cycle69_mcp_docs_advisory_audit.json"
+        )
+        assert source.config["github_readme_present"] is True
+        assert source.config["github_docs_present"] is True
+        assert source.config["github_docs_paths"]
+        assert source.config["github_security_advisory_access_status"].startswith("checked")
+        assert source.config["github_security_advisory_count"] >= 0
+        if source.config.get("command_discovery_status"):
+            assert source.config["command_discovery_checked_at"]
+            assert (
+                source.config["command_discovery_artifact"]
+                == "_workspace/2026-04-30_cycle71_mcp_command_discovery_audit.json"
+            )
+        if "command_or_endpoint_unresolved" in source.config.get("activation_gates", []):
+            assert source.config["command_discovery_status"]
         if source.config["activation_status"] != "metadata_only":
             assert source.config["activation_audited_at"]
             assert source.config["activation_gates"]
