@@ -3,7 +3,7 @@ name: Radar Crawler (Optimized)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"  # Daily at 00:00 UTC (adjust per project)
+    - cron: "0 15 * * *"  # Daily at 00:00 UTC (adjust per project)
 
 permissions:
   contents: write
