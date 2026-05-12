@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-visual-system="radar-unified-v2" data-visual-surface="index">
+<html lang="en" data-visual-system="radar-unified-v2" data-visual-surface="report" data-visual-page="index">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,12 +12,24 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
   <style>
     :root {
-      --bg-page: #0b0b0f; --bg-card: rgba(28, 26, 34, 0.86); --text-primary: #f4f4f7;
-      --text-muted: rgba(244, 244, 247, 0.58); --border-subtle: rgba(244, 244, 247, 0.14);
+      --vs-color-bg: #0b0b0f;
+      --vs-color-surface: rgba(28, 26, 34, 0.86);
+      --vs-color-text: #f4f4f7;
+      --vs-color-muted: rgba(244, 244, 247, 0.58);
+      --vs-color-border: rgba(244, 244, 247, 0.14);
+      --vs-color-accent: #33d6c5;
+      --vs-radius-md: 8px;
+      --vs-font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg-page: var(--vs-color-bg);
+      --bg-card: var(--vs-color-surface);
+      --text-primary: var(--vs-color-text);
+      --text-muted: var(--vs-color-muted);
+      --border-subtle: var(--vs-color-border);
       --shadow-card: 0 14px 42px rgba(0,0,0,0.34);
       --shadow-card-hover: 0 18px 52px rgba(0,0,0,0.42);
-      --accent-teal: #33d6c5; --radius-md: 8px;
-      --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --accent-teal: var(--vs-color-accent);
+      --radius-md: var(--vs-radius-md);
+      --font-sans: var(--vs-font-sans);
     }
     * { box-sizing: border-box; }
     body {
@@ -67,7 +79,7 @@
   <div class="container">
     <header class="header">
       <h1 class="header__title">Radar Reports</h1>
-      <div class="header__timestamp">Generated 2026-05-12T03:32:25.847679+00:00 UTC</div>
+      <div class="header__timestamp">Generated 2026-05-12T20:29:24.814202+00:00 UTC</div>
     </header>
 
     
@@ -87,7 +99,7 @@
     
 
     <footer class="footer">
-      Radar Reports Index — generated 2026-05-12T03:32:25.847679+00:00 UTC
+      Radar Reports Index — generated 2026-05-12T20:29:24.814202+00:00 UTC
     </footer>
   </div>
 </body>

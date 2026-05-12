@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-visual-system="radar-unified-v2" data-visual-surface="report">
+<html lang="en" data-visual-system="radar-unified-v2" data-visual-surface="report" data-visual-page="daily-report">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,16 +12,27 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
   <style>
     :root {
-      --bg-page: #0b0b0f;
-      --bg-card: rgba(28, 26, 34, 0.86);
-      --bg-card-strong: rgba(36, 33, 43, 0.94);
-      --text-primary: #f4f4f7;
-      --text-secondary: rgba(244, 244, 247, 0.76);
-      --text-muted: rgba(244, 244, 247, 0.58);
-      --border-subtle: rgba(244, 244, 247, 0.14);
+      --vs-color-bg: #0b0b0f;
+      --vs-color-surface: rgba(28, 26, 34, 0.86);
+      --vs-color-surface-strong: rgba(36, 33, 43, 0.94);
+      --vs-color-text: #f4f4f7;
+      --vs-color-text-secondary: rgba(244, 244, 247, 0.76);
+      --vs-color-muted: rgba(244, 244, 247, 0.58);
+      --vs-color-border: rgba(244, 244, 247, 0.14);
+      --vs-color-accent: #33d6c5;
+      --vs-radius-sm: 6px;
+      --vs-radius-md: 8px;
+      --vs-font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg-page: var(--vs-color-bg);
+      --bg-card: var(--vs-color-surface);
+      --bg-card-strong: var(--vs-color-surface-strong);
+      --text-primary: var(--vs-color-text);
+      --text-secondary: var(--vs-color-text-secondary);
+      --text-muted: var(--vs-color-muted);
+      --border-subtle: var(--vs-color-border);
       --shadow-card: 0 14px 42px rgba(0,0,0,0.34);
       --shadow-card-hover: 0 18px 52px rgba(0,0,0,0.42);
-      --accent-teal: #33d6c5;
+      --accent-teal: var(--vs-color-accent);
       --accent-blue: #19b591;
       --accent-yellow: #f6c84c;
       --accent-indigo: #78a2ff;
@@ -31,11 +42,11 @@
       --error-bg: rgba(255, 91, 110, 0.13);
       --error-border: rgba(255, 91, 110, 0.28);
       --error-text: #ff9ca8;
-      --radius-sm: 6px;
-      --radius-md: 8px;
+      --radius-sm: var(--vs-radius-sm);
+      --radius-md: var(--vs-radius-md);
       --radius-full: 9999px;
       --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
-      --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-sans: var(--vs-font-sans);
     }
     * { box-sizing: border-box; }
     body {
@@ -249,7 +260,7 @@
     <header class="header">
       <div class="header__info">
         <h1 class="header__title">기타 MCP 레이더</h1>
-        <div class="header__timestamp">Generated 2026-05-12T03:32:25.643886+00:00 UTC</div>
+        <div class="header__timestamp">Generated 2026-05-12T20:29:24.607226+00:00 UTC</div>
       </div>
       <div id="export-actions" class="export-actions"><button class="btn-export" id="btn-csv" onclick="exportCSV()">Export CSV</button></div>
     </header>
@@ -258,7 +269,7 @@
     <div class="summary-grid">
       <div class="stat-card">
         <div class="stat-card__label">Sources</div>
-        <div class="stat-card__value">1</div>
+        <div class="stat-card__value">2</div>
       </div>
       <div class="stat-card stat-card--blue">
         <div class="stat-card__label">Collected</div>
@@ -318,6 +329,38 @@
     </div>
 
     
+    <h2 class="section-title" id="mcp-quality-heading">MCP Source Quality</h2>
+    <section id="mcp-quality" class="quality-panel" aria-label="MCP source quality">
+      <div class="quality-grid">
+        <div class="quality-metric">
+          <span class="quality-metric__label">MCP candidates</span>
+          <span class="quality-metric__value">0</span>
+        </div>
+        <div class="quality-metric">
+          <span class="quality-metric__label">Enabled tools</span>
+          <span class="quality-metric__value">0</span>
+        </div>
+        <div class="quality-metric">
+          <span class="quality-metric__label">Tool results</span>
+          <span class="quality-metric__value">0</span>
+        </div>
+        <div class="quality-metric">
+          <span class="quality-metric__label">Metadata gaps</span>
+          <span class="quality-metric__value">0</span>
+        </div>
+        <div class="quality-metric">
+          <span class="quality-metric__label">Review items</span>
+          <span class="quality-metric__value">0</span>
+        </div>
+      </div>
+      
+      <p class="article-card__summary">misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.</p>
+      
+      
+      <p class="article-card__summary">No MCP quality review items in this run.</p>
+      
+    </section>
+    
 
     <!-- Entity Hits -->
     
@@ -337,7 +380,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-      Radar Report — generated 2026-05-12T03:32:25.643886+00:00 UTC
+      Radar Report — generated 2026-05-12T20:29:24.607226+00:00 UTC
     </footer>
   </div>
 

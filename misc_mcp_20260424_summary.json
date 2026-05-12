@@ -1,0 +1,41 @@
+{
+  "date": "2026-04-24",
+  "category": "misc_mcp",
+  "article_count": 0,
+  "source_count": 0,
+  "matched_count": 0,
+  "top_entities": [],
+  "sources": {},
+  "generated_at": "2026-04-24T07:38:11.855736+00:00",
+  "ontology": {
+    "repo": "MiscMCPRadar",
+    "category": "misc_mcp",
+    "ontology_version": "0.1.0",
+    "event_model_ids": [
+      "mcp.directory_entry",
+      "mcp.tool_result",
+      "shared.linked_repository_metadata",
+      "shared.risk_scope_signal"
+    ],
+    "event_model_mappings": {
+      "mcp_directory_entry": "mcp.directory_entry",
+      "mcp_tool_result": "mcp.tool_result",
+      "linked_repository_metadata": "shared.linked_repository_metadata",
+      "risk_scope_signal": "shared.risk_scope_signal"
+    },
+    "entity_type_hints": [
+      "mcp.server",
+      "mcp.tool"
+    ],
+    "source_role_ids": [
+      "community_signal"
+    ],
+    "source_role_mappings": {
+      "awesome-mcp-korea Miscellaneous": "community_signal"
+    },
+    "evidence_policy_ids": [
+      "traceable_url_required",
+      "write_action_risk_review_required"
+    ]
+  }
+}
