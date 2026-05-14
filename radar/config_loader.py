@@ -351,3 +351,44 @@ def load_notification_config(
         telegram=telegram_settings,
         rules=rules,
     )
+
+
+def filter_sources(
+    sources: list[Source],
+    *,
+    max_sources: int | None = None,
+    exclude_sources: tuple[str, ...] | list[str] = (),
+) -> list[Source]:
+    """Filter sources by exclusion id/name and a hard max count.
+
+    Mirrors ``radar_core.config_loader.filter_sources`` so MCP-style repos with
+    a vendored ``radar`` package can call it locally.
+    """
+    excluded_tokens: set[str] = set()
+    if exclude_sources:
+        for token in exclude_sources:
+            if not isinstance(token, str):
+                continue
+            normalized = token.strip().lower()
+            if normalized:
+                excluded_tokens.add(normalized)
+
+    filtered: list[Source]
+    if excluded_tokens:
+        filtered = []
+        for source in sources:
+            source_id = (getattr(source, "id", "") or "").strip().lower()
+            source_name = (getattr(source, "name", "") or "").strip().lower()
+            match_token = source_id if source_id else source_name
+            if match_token and match_token in excluded_tokens:
+                continue
+            if source_name and source_name in excluded_tokens:
+                continue
+            filtered.append(source)
+    else:
+        filtered = list(sources)
+
+    if isinstance(max_sources, int) and max_sources > 0:
+        filtered = filtered[:max_sources]
+
+    return filtered
