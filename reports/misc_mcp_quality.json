@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-05-14T04:08:56.388737+00:00",
+  "generated_at": "2026-05-14T04:23:16.394388+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 6,
       "event_count": 6,
       "latest_event_at": "2026-05-07T09:30:02.523930+00:00",
-      "age_days": 6.78,
+      "age_days": 6.79,
       "latest_title": "koreanpulse",
       "latest_url": "https://github.com/whdrnr2583-cmd/koreanpulse",
       "latest_mcp_domain": [],
