@@ -189,12 +189,13 @@ def test_quality_report_skips_disabled_directory_source() -> None:
 
     summary = report["summary"]
     assert summary["tracked_sources"] >= 1
-    assert summary["missing_sources"] == 0
+    assert summary["missing_sources"] == 1
     assert summary["skipped_disabled_sources"] >= 1
     assert summary["mcp_directory_entry_events"] == 0
-    assert summary["daily_review_item_count"] == 0
+    assert summary["daily_review_item_count"] == 1
     assert report["sources"][0]["status"] == "skipped_disabled"
-    assert report["daily_review_items"] == []
+    assert report["sources"][1]["status"] == "missing"
+    assert report["daily_review_items"][0]["source"] == "Official MCP Registry Korea search"
 
 
 def test_write_quality_report_writes_latest_and_dated_files(tmp_path: Path) -> None:

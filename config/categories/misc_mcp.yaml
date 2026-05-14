@@ -83,7 +83,7 @@ sources:
 - name: Official MCP Registry Korea search
   type: mcp_registry_search
   url: https://registry.modelcontextprotocol.io/v0.1/servers
-  enabled: false
+  enabled: true
   section: Korea registry search
   trust_tier: T3_registry
   collection_tier: C2_registry_api
@@ -92,13 +92,15 @@ sources:
   info_purpose:
   - replacement_seed_candidate
   - repository_metadata_enrichment
-  notes: 'DISABLED 2026-04-28: official MCP Registry Korea/Korean search returns
-    repository-backed candidates, but activation needs duplicate/domain routing
-    against the existing MCP Radar family plus a live collection smoke.'
+  notes: 'ENABLED 2026-05-14: official MCP Registry Korea/Korean/South-Korea search
+    passed live smoke with repository-backed candidates and now replaces the removed
+    awesome-mcp-korea Miscellaneous section as the seed source. Domain dedup and
+    repository metadata enrichment remain backlog work.'
   config:
-    disabled_reason: awaiting_smoke_test
-    required_before_enable:
-    - registry_api_smoke
+    activation_status: registry_api_smoke_passed
+    activation_evidence:
+    - live_smoke_2026-05-14_returned_repository_candidates
+    remaining_gates:
     - domain_dedup_with_mcp_radar_repos
     - repository_metadata_enrichment_mapping
     search_terms:

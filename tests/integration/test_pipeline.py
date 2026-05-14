@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 import yaml
 
 from main import run
@@ -99,3 +100,54 @@ def test_full_pipeline_creates_all_outputs(tmp_path: Path) -> None:
     assert search_db_path.exists()
     assert output_path.exists()
     assert output_path.suffix == ".html"
+
+
+def test_pipeline_fails_when_category_has_no_enabled_sources(tmp_path: Path) -> None:
+    config_path = tmp_path / "config.yaml"
+    categories_dir = tmp_path / "categories"
+    categories_dir.mkdir(parents=True, exist_ok=True)
+
+    _ = config_path.write_text(
+        yaml.safe_dump(
+            {
+                "database_path": str(tmp_path / "data" / "radar_data.duckdb"),
+                "report_dir": str(tmp_path / "reports"),
+                "raw_data_dir": str(tmp_path / "data" / "raw"),
+                "search_db_path": str(tmp_path / "data" / "search_index.db"),
+            },
+            sort_keys=False,
+            allow_unicode=True,
+        ),
+        encoding="utf-8",
+    )
+    _ = (categories_dir / "empty_cat.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "category_name": "empty_cat",
+                "display_name": "Empty Category",
+                "sources": [
+                    {
+                        "name": "Disabled RSS",
+                        "type": "rss",
+                        "url": "https://example.com/feed.xml",
+                        "enabled": False,
+                    }
+                ],
+                "entities": [],
+            },
+            sort_keys=False,
+            allow_unicode=True,
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="no enabled sources configured"):
+        run(
+            category="empty_cat",
+            config_path=config_path,
+            categories_dir=categories_dir,
+            per_source_limit=5,
+            recent_days=7,
+            timeout=5,
+            keep_days=30,
+        )

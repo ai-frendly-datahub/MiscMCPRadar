@@ -19,6 +19,25 @@ from radar.search_index import SearchIndex
 from radar.storage import RadarStorage
 
 
+def _enforce_non_empty_collection_contract(
+    *,
+    category_name: str,
+    enabled_source_count: int,
+    validated_count: int,
+    errors: list[str],
+) -> None:
+    if enabled_source_count == 0:
+        raise RuntimeError(
+            f"Collection contract failed for {category_name}: no enabled sources configured"
+        )
+    if validated_count == 0:
+        detail = f" Latest source errors: {'; '.join(errors[:3])}" if errors else ""
+        raise RuntimeError(
+            f"Collection contract failed for {category_name}: no validated articles collected."
+            f"{detail}"
+        )
+
+
 def _send_notifications(
     *,
     category_name: str,
@@ -134,6 +153,14 @@ def run(
     if validation_errors:
         errors.extend(validation_errors)
 
+    enabled_source_count = sum(1 for source in category_cfg.sources if source.enabled)
+    _enforce_non_empty_collection_contract(
+        category_name=category_cfg.category_name,
+        enabled_source_count=enabled_source_count,
+        validated_count=len(validated_articles),
+        errors=errors,
+    )
+
     storage = RadarStorage(settings.database_path)
     storage.upsert_articles(validated_articles)
     _ = storage.delete_older_than(keep_days)
@@ -142,8 +169,10 @@ def run(
         for article in validated_articles:
             search_idx.upsert(article.link, article.title, article.summary)
 
-    recent_articles: list[Article] = storage.recent_articles(
-        category_cfg.category_name, days=recent_days
+    recent_articles: list[Article] = storage.recent_articles_by_collected_at(
+        category_cfg.category_name,
+        days=recent_days,
+        limit=max(200, per_source_limit * max(len(category_cfg.sources), 1) * 2),
     )
     quality_articles: list[Article] = storage.recent_articles_by_collected_at(
         category_cfg.category_name,

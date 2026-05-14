@@ -50,14 +50,16 @@ def test_mcp_category_config_has_registry_replacement_candidate() -> None:
 
     assert len(registry_sources) == 1
     source = registry_sources[0]
-    assert source.enabled is False
+    assert source.enabled is True
     assert source.url == "https://registry.modelcontextprotocol.io/v0.1/servers"
     assert source.collection_tier == "C2_registry_api"
     assert source.content_type == "mcp_directory"
-    assert source.config["disabled_reason"] == "awaiting_smoke_test"
+    assert source.config["activation_status"] == "registry_api_smoke_passed"
+    assert source.config["activation_evidence"] == [
+        "live_smoke_2026-05-14_returned_repository_candidates"
+    ]
     assert source.config["search_terms"] == ["korea", "korean", "south-korea"]
-    assert source.config["required_before_enable"] == [
-        "registry_api_smoke",
+    assert source.config["remaining_gates"] == [
         "domain_dedup_with_mcp_radar_repos",
         "repository_metadata_enrichment_mapping",
     ]
