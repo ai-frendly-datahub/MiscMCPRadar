@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-05-17T15:52:38.311787+00:00",
+  "generated_at": "2026-05-19T13:27:19.106766+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 8,
       "event_count": 8,
       "latest_event_at": "2026-05-16T12:45:13.078555+00:00",
-      "age_days": 1.13,
+      "age_days": 3.03,
       "latest_title": "io.github.yjhann33-design/korea-stock-insight-mcp",
       "latest_url": "https://github.com/yjhann33-design/korea-stock-insight-mcp",
       "latest_mcp_domain": [],
