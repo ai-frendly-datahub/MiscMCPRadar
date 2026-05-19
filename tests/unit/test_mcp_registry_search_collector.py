@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from urllib.parse import parse_qs, urlparse
+
+import pytest
+import requests
 
 from radar.collector import _collect_single
+from radar.exceptions import NetworkError
 from radar.models import Source
 
 
@@ -25,6 +30,28 @@ class _RegistrySession:
     def get(self, url: str, *, timeout: int, headers: dict[str, str]) -> _RegistryResponse:
         self.urls.append(url)
         return _RegistryResponse(self.payload)
+
+
+class _FlakyRegistrySession:
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+        self.urls: list[str] = []
+
+    def get(self, url: str, *, timeout: int, headers: dict[str, str]) -> _RegistryResponse:
+        self.urls.append(url)
+        query = parse_qs(urlparse(url).query)
+        if query.get("search") == ["korea"]:
+            raise requests.exceptions.Timeout("registry timeout")
+        return _RegistryResponse(self.payload)
+
+
+class _FailingRegistrySession:
+    def __init__(self) -> None:
+        self.urls: list[str] = []
+
+    def get(self, url: str, *, timeout: int, headers: dict[str, str]) -> _RegistryResponse:
+        self.urls.append(url)
+        raise requests.exceptions.Timeout("registry timeout")
 
 
 def test_mcp_registry_search_collects_github_repository_entries() -> None:
@@ -114,3 +141,65 @@ def test_mcp_registry_search_uses_category_as_default_query() -> None:
     assert session.urls == [
         "https://registry.modelcontextprotocol.io/v0.1/servers?search=misc_mcp&limit=10"
     ]
+
+
+def test_mcp_registry_search_continues_after_search_term_timeout() -> None:
+    payload = {
+        "servers": [
+            {
+                "server": {
+                    "name": "io.github.example/korean-weather-mcp",
+                    "title": "Korean Weather MCP",
+                    "description": "Korean weather API MCP server",
+                    "repository": {
+                        "url": "https://github.com/example/korean-weather-mcp",
+                        "source": "github",
+                    },
+                }
+            }
+        ]
+    }
+    session = _FlakyRegistrySession(payload)
+    source = Source(
+        name="Official MCP Registry Korea search",
+        type="mcp_registry_search",
+        url="https://registry.modelcontextprotocol.io/v0.1/servers",
+        config={"search_terms": ["korea", "korean"], "query_limit": 5},
+    )
+
+    articles = _collect_single(
+        source,
+        category="misc_mcp",
+        limit=10,
+        timeout=15,
+        session=session,  # type: ignore[arg-type]
+    )
+
+    assert len(articles) == 1
+    assert articles[0].link == "https://github.com/example/korean-weather-mcp"
+    assert session.urls.count(
+        "https://registry.modelcontextprotocol.io/v0.1/servers?search=korea&limit=5"
+    ) == 3
+    assert (
+        "https://registry.modelcontextprotocol.io/v0.1/servers?search=korean&limit=5"
+        in session.urls
+    )
+
+
+def test_mcp_registry_search_raises_when_all_search_terms_timeout() -> None:
+    session = _FailingRegistrySession()
+    source = Source(
+        name="Official MCP Registry Korea search",
+        type="mcp_registry_search",
+        url="https://registry.modelcontextprotocol.io/v0.1/servers",
+        config={"search_terms": ["korea", "korean"], "query_limit": 5},
+    )
+
+    with pytest.raises(NetworkError, match="all registry search terms failed"):
+        _collect_single(
+            source,
+            category="misc_mcp",
+            limit=10,
+            timeout=15,
+            session=session,  # type: ignore[arg-type]
+        )

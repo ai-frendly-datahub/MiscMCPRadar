@@ -257,6 +257,7 @@ def _collect_mcp_registry_search(
 
     articles: list[Article] = []
     seen: set[str] = set()
+    term_errors: list[str] = []
     for term in search_terms:
         if len(articles) >= limit:
             break
@@ -265,11 +266,14 @@ def _collect_mcp_registry_search(
             response = _fetch_url_with_retry(registry_url, timeout=timeout, session=session)
             payload = response.json()
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as exc:
-            raise NetworkError(f"Network error fetching {source.name}: {exc}") from exc
+            term_errors.append(f"{term}: {exc}")
+            continue
         except requests.exceptions.RequestException as exc:
-            raise SourceError(source.name, f"Request failed: {exc}") from exc
+            term_errors.append(f"{term}: {exc}")
+            continue
         except ValueError as exc:
-            raise SourceError(source.name, f"Failed to parse registry JSON: {exc}") from exc
+            term_errors.append(f"{term}: invalid JSON - {exc}")
+            continue
 
         for entry in _registry_entries(payload):
             article = _article_from_registry_entry(
@@ -286,6 +290,11 @@ def _collect_mcp_registry_search(
             articles.append(article)
             if len(articles) >= limit:
                 break
+    if not articles and term_errors:
+        raise NetworkError(
+            f"Network error fetching {source.name}: all registry search terms failed. "
+            f"Latest errors: {'; '.join(term_errors[:3])}"
+        )
     return articles
 
 
