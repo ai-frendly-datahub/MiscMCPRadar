@@ -14,7 +14,7 @@
     "not_tracked_sources": 0,
     "skipped_disabled_sources": 1,
     "collection_error_count": 0,
-    "mcp_signal_event_count": 8,
+    "mcp_signal_event_count": 9,
     "directory_seed_source_count": 2,
     "mcp_server_candidate_count": 0,
     "enabled_mcp_server_source_count": 0,
@@ -59,7 +59,7 @@
     "activation_runtime_review_required_source_count": 0,
     "activation_ready_for_fake_transport_source_count": 0,
     "daily_review_item_count": 0,
-    "mcp_directory_entry_events": 8,
+    "mcp_directory_entry_events": 9,
     "mcp_tool_result_events": 0,
     "linked_repository_metadata_events": 0,
     "risk_scope_signal_events": 0
@@ -145,18 +145,23 @@
       "repository_metadata": {},
       "freshness_sla_days": 7.0,
       "status": "fresh",
-      "article_count": 8,
-      "event_count": 8,
+      "article_count": 9,
+      "event_count": 9,
       "latest_event_at": "2026-05-16T12:45:13.078555+00:00",
       "age_days": 3.2,
       "latest_title": "io.github.yjhann33-design/korea-stock-insight-mcp",
       "latest_url": "https://github.com/yjhann33-design/korea-stock-insight-mcp",
-      "latest_mcp_domain": [],
+      "latest_mcp_domain": [
+        "stock market"
+      ],
       "latest_provider": [
         "krx",
         "dart"
       ],
-      "latest_capability": [],
+      "latest_capability": [
+        "stock",
+        "prices"
+      ],
       "latest_risk_scope": [],
       "latest_required_field_proxy": {
         "repository": true,
@@ -194,12 +199,17 @@
       "title": "io.github.yjhann33-design/korea-stock-insight-mcp",
       "url": "https://github.com/yjhann33-design/korea-stock-insight-mcp",
       "event_at": "2026-05-16T12:45:13.078555+00:00",
-      "mcp_domain": [],
+      "mcp_domain": [
+        "stock market"
+      ],
       "provider": [
         "krx",
         "dart"
       ],
-      "capability": [],
+      "capability": [
+        "stock",
+        "prices"
+      ],
       "risk_scope": [],
       "project_health": [
         "mcp",
@@ -297,9 +307,19 @@
       "title": "Korean Stock Market Data",
       "url": "https://github.com/SongT-50/korean-stock-mcp",
       "event_at": "2026-03-08T23:54:55.923137+00:00",
-      "mcp_domain": [],
+      "mcp_domain": [
+        "stock market",
+        "financial disclosures"
+      ],
       "provider": [],
-      "capability": [],
+      "capability": [
+        "market data",
+        "stock",
+        "dividends",
+        "short selling",
+        "prices",
+        "financial disclosures"
+      ],
       "risk_scope": [],
       "project_health": [],
       "required_field_proxy": {
@@ -314,9 +334,18 @@
       "title": "Korean Agriculture Market Data",
       "url": "https://github.com/SongT-50/korean-agriculture-mcp",
       "event_at": "2026-03-08T23:54:49.600100+00:00",
-      "mcp_domain": [],
+      "mcp_domain": [
+        "agriculture market",
+        "wholesale agriculture"
+      ],
       "provider": [],
-      "capability": [],
+      "capability": [
+        "market data",
+        "agriculture",
+        "wholesale",
+        "prices",
+        "auction prices"
+      ],
       "risk_scope": [],
       "project_health": [],
       "required_field_proxy": {
