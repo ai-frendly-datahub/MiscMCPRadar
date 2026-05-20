@@ -116,6 +116,10 @@ entities:
   - Miscellaneous
   - other
   - 기타
+  - stock market
+  - financial disclosures
+  - agriculture market
+  - wholesale agriculture
 - name: Provider
   display_name: 서비스 제공자
   keywords:
@@ -147,6 +151,17 @@ entities:
   - message
   - calendar
   - parse
+  - market data
+  - stock
+  - stocks
+  - dividends
+  - short selling
+  - agriculture
+  - agricultural
+  - wholesale
+  - prices
+  - auction prices
+  - financial disclosures
   - 검색
   - 조회
   - 분석

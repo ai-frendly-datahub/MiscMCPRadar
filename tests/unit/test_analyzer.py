@@ -56,6 +56,7 @@ Article = cast(_ArticleCtor, import_module("radar.models").Article)
 EntityDefinition = cast(_EntityCtor, import_module("radar.models").EntityDefinition)
 analyzer_module = import_module("radar.analyzer")
 apply_entity_rules = cast(_ApplyEntityRules, analyzer_module.apply_entity_rules)
+load_category_config = import_module("radar.config_loader").load_category_config
 
 
 def _make_article(*, title: str, summary: str) -> _Article:
@@ -200,3 +201,43 @@ def test_apply_entity_rules_cjk_keyword_falls_back_when_kiwi_unavailable(
     analyzed = apply_entity_rules([article], entities)
 
     assert analyzed[0].matched_entities == {"topic": ["인공지능"]}
+
+
+def test_real_misc_mcp_config_classifies_current_registry_market_data_items() -> None:
+    config = load_category_config("misc_mcp")
+    articles = [
+        _make_article(
+            title="Korean Stock Market Data",
+            summary="Korean stock market data - prices, dividends, short selling, financial disclosures",
+        ),
+        _make_article(
+            title="Korean Agriculture Market Data",
+            summary="Korean wholesale agriculture market data - auction prices and seasonal produce",
+        ),
+    ]
+
+    analyzed = apply_entity_rules(articles, config.entities)
+
+    assert analyzed[0].matched_entities["MCPDomain"] == [
+        "stock market",
+        "financial disclosures",
+    ]
+    assert analyzed[0].matched_entities["Capability"] == [
+        "market data",
+        "stock",
+        "dividends",
+        "short selling",
+        "prices",
+        "financial disclosures",
+    ]
+    assert analyzed[1].matched_entities["MCPDomain"] == [
+        "agriculture market",
+        "wholesale agriculture",
+    ]
+    assert analyzed[1].matched_entities["Capability"] == [
+        "market data",
+        "agriculture",
+        "wholesale",
+        "prices",
+        "auction prices",
+    ]
