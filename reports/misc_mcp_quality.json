@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-05-30T16:00:11.628272+00:00",
+  "generated_at": "2026-05-31T16:01:01.876202+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 8,
       "event_count": 8,
       "latest_event_at": "2026-05-21T07:07:06.172999+00:00",
-      "age_days": 9.37,
+      "age_days": 10.37,
       "latest_title": "Vivory Korea Data Gateway",
       "latest_url": "https://github.com/jayjodev/vivory-mcp",
       "latest_mcp_domain": [],
