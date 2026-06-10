@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-06-09T17:21:12.544804+00:00",
+  "generated_at": "2026-06-10T17:53:19.743480+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 5,
       "event_count": 5,
       "latest_event_at": "2026-06-01T01:31:28.075507+00:00",
-      "age_days": 8.66,
+      "age_days": 9.68,
       "latest_title": "io.github.DeepSearch-Common/korean-stocks",
       "latest_url": "https://github.com/deepsearch-hq/deepsearch-x402.git",
       "latest_mcp_domain": [],
