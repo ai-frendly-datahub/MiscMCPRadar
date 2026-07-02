@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-07-01T17:08:40.660548+00:00",
+  "generated_at": "2026-07-02T16:45:38.567109+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 8,
       "event_count": 8,
       "latest_event_at": "2026-06-29T13:58:36.294549+00:00",
-      "age_days": 2.13,
+      "age_days": 3.12,
       "latest_title": "io.github.smilemin07/korean-rnd-regs-mcp",
       "latest_url": "https://github.com/smilemin07/korean-rnd-regs-mcp",
       "latest_mcp_domain": [],
