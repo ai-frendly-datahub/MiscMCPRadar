@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-07-17T16:09:12.642823+00:00",
+  "generated_at": "2026-07-18T15:47:55.250226+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 9,
       "event_count": 9,
       "latest_event_at": "2026-07-10T08:05:48.609796+00:00",
-      "age_days": 7.34,
+      "age_days": 8.32,
       "latest_title": "Korea Invoices (POPBiLL 전자세금계산서 issue, query & NTS transmit)",
       "latest_url": "https://github.com/junter1989k-ai/korea-invoice-mcp",
       "latest_mcp_domain": [],
