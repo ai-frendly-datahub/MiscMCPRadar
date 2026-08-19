@@ -1,0 +1,25 @@
+{
+  "date": "2026-08-19",
+  "category": "misc_mcp",
+  "article_count": 10,
+  "source_count": 1,
+  "matched_count": 7,
+  "top_entities": [
+    {
+      "name": "ProjectHealth",
+      "count": 13
+    },
+    {
+      "name": "Capability",
+      "count": 4
+    },
+    {
+      "name": "Provider",
+      "count": 1
+    }
+  ],
+  "sources": {
+    "Official MCP Registry Korea search": 10
+  },
+  "generated_at": "2026-08-19T15:23:05.856325+00:00"
+}
