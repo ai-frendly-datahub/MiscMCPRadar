@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-08-28T00:10:51.415907+00:00",
+  "generated_at": "2026-08-28T23:47:35.615459+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 10,
       "event_count": 10,
       "latest_event_at": "2026-08-09T11:18:31.310348+00:00",
-      "age_days": 18.54,
+      "age_days": 19.52,
       "latest_title": "io.github.raphysicst-create/korean-vocational-learning-map-mcp",
       "latest_url": "https://github.com/raphysicst-create/korean-vocational-learning-map-mcp",
       "latest_mcp_domain": [],
