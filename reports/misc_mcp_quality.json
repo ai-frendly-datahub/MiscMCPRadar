@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-10-10T19:04:46.148097+00:00",
+  "generated_at": "2026-10-11T19:17:00.461460+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 10,
       "event_count": 10,
       "latest_event_at": "2026-10-10T08:37:53.108903+00:00",
-      "age_days": 0.44,
+      "age_days": 1.44,
       "latest_title": "Korean Law MCP",
       "latest_url": "https://github.com/chrisryugj/korean-law-mcp",
       "latest_mcp_domain": [],
