@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-10-12T22:20:36.008286+00:00",
+  "generated_at": "2026-10-13T20:27:24.422771+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 10,
       "event_count": 10,
       "latest_event_at": "2026-10-10T08:37:53.108903+00:00",
-      "age_days": 2.57,
+      "age_days": 3.49,
       "latest_title": "Korean Law MCP",
       "latest_url": "https://github.com/chrisryugj/korean-law-mcp",
       "latest_mcp_domain": [],
@@ -166,50 +166,6 @@
     }
   ],
   "events": [
-    {
-      "source": "Official MCP Registry Korea search",
-      "event_model": "mcp_directory_entry",
-      "title": "Korean Law MCP",
-      "url": "https://github.com/chrisryugj/korean-law-mcp",
-      "event_at": "2026-10-10T08:37:53.108903+00:00",
-      "mcp_domain": [],
-      "provider": [],
-      "capability": [],
-      "risk_scope": [
-        "api"
-      ],
-      "project_health": [
-        "mcp",
-        "api"
-      ],
-      "required_field_proxy": {
-        "repository": true,
-        "source_section": true,
-        "source_url": true
-      }
-    },
-    {
-      "source": "Official MCP Registry Korea search",
-      "event_model": "risk_scope_signal",
-      "title": "Korean Law MCP",
-      "url": "https://github.com/chrisryugj/korean-law-mcp",
-      "event_at": "2026-10-10T08:37:53.108903+00:00",
-      "mcp_domain": [],
-      "provider": [],
-      "capability": [],
-      "risk_scope": [
-        "api"
-      ],
-      "project_health": [
-        "mcp",
-        "api"
-      ],
-      "required_field_proxy": {
-        "repository": true,
-        "risk_scope": true,
-        "evidence_url": true
-      }
-    },
     {
       "source": "Official MCP Registry Korea search",
       "event_model": "mcp_directory_entry",
@@ -286,14 +242,12 @@
     {
       "source": "Official MCP Registry Korea search",
       "event_model": "mcp_directory_entry",
-      "title": "Korean Patent Status — 특허 존속 여부 판정",
-      "url": "https://github.com/didrod205/korean-patent-mcp",
-      "event_at": "2026-09-17T02:49:06.865069+00:00",
+      "title": "app.sallim/korea-realty",
+      "url": "https://github.com/sallim-app/korea-realty",
+      "event_at": "2026-07-30T23:48:37.297360+00:00",
       "mcp_domain": [],
       "provider": [],
-      "capability": [
-        "검색"
-      ],
+      "capability": [],
       "risk_scope": [],
       "project_health": [],
       "required_field_proxy": {
@@ -305,12 +259,58 @@
     {
       "source": "Official MCP Registry Korea search",
       "event_model": "mcp_directory_entry",
-      "title": "app.sallim/korea-realty",
-      "url": "https://github.com/sallim-app/korea-realty",
-      "event_at": "2026-07-30T23:48:37.297360+00:00",
+      "title": "Korean Law MCP",
+      "url": "https://github.com/chrisryugj/korean-law-mcp",
+      "event_at": "2026-10-10T08:37:53.108903+00:00",
       "mcp_domain": [],
       "provider": [],
       "capability": [],
+      "risk_scope": [
+        "api"
+      ],
+      "project_health": [
+        "mcp",
+        "api"
+      ],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "risk_scope_signal",
+      "title": "Korean Law MCP",
+      "url": "https://github.com/chrisryugj/korean-law-mcp",
+      "event_at": "2026-10-10T08:37:53.108903+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [
+        "api"
+      ],
+      "project_health": [
+        "mcp",
+        "api"
+      ],
+      "required_field_proxy": {
+        "repository": true,
+        "risk_scope": true,
+        "evidence_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "Korean Patent Status — 특허 존속 여부 판정",
+      "url": "https://github.com/didrod205/korean-patent-mcp",
+      "event_at": "2026-09-17T02:49:06.865069+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [
+        "검색"
+      ],
       "risk_scope": [],
       "project_health": [],
       "required_field_proxy": {
