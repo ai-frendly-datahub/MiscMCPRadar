@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-10-14T19:08:01.848676+00:00",
+  "generated_at": "2026-10-15T18:48:31.365979+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 11,
       "event_count": 11,
       "latest_event_at": "2026-10-14T14:32:26.847800+00:00",
-      "age_days": 0.19,
+      "age_days": 1.18,
       "latest_title": "Korean Government Documents (HWPX)",
       "latest_url": "https://github.com/UpstageAI/korean-report-hwpx",
       "latest_mcp_domain": [],
