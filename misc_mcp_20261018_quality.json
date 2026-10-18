@@ -1,0 +1,423 @@
+{
+  "category": "misc_mcp",
+  "generated_at": "2026-10-18T17:43:09.238116+00:00",
+  "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
+  "summary": {
+    "total_sources": 2,
+    "enabled_sources": 1,
+    "tracked_sources": 2,
+    "fresh_sources": 1,
+    "stale_sources": 0,
+    "missing_sources": 0,
+    "missing_event_sources": 0,
+    "unknown_event_date_sources": 0,
+    "not_tracked_sources": 0,
+    "skipped_disabled_sources": 1,
+    "collection_error_count": 0,
+    "mcp_signal_event_count": 12,
+    "directory_seed_source_count": 2,
+    "mcp_server_candidate_count": 0,
+    "enabled_mcp_server_source_count": 0,
+    "blocked_mcp_server_source_count": 0,
+    "real_transport_smoke_tested_source_count": 0,
+    "tool_allowlist_present_source_count": 0,
+    "credential_required_source_count": 0,
+    "env_preflight_required_source_count": 0,
+    "env_preflight_ready_source_count": 0,
+    "env_preflight_missing_source_count": 0,
+    "env_preflight_missing_var_count": 0,
+    "env_preflight_not_required_source_count": 0,
+    "repository_metadata_complete_source_count": 0,
+    "repository_metadata_gap_count": 0,
+    "repository_metadata_fresh_source_count": 0,
+    "repository_metadata_stale_source_count": 0,
+    "repository_metadata_incomplete_source_count": 0,
+    "repository_metadata_missing_checked_at_source_count": 0,
+    "repository_metadata_review_required_count": 0,
+    "repository_docs_present_source_count": 0,
+    "repository_docs_missing_source_count": 0,
+    "repository_security_policy_present_source_count": 0,
+    "repository_security_advisory_checked_source_count": 0,
+    "repository_security_advisory_total_count": 0,
+    "repository_security_advisory_open_source_count": 0,
+    "repository_security_enrichment_review_required_count": 0,
+    "security_activation_gate_count": 0,
+    "activation_gate_source_count": 0,
+    "activation_gate_total_count": 0,
+    "activation_risk_scope_review_required_source_count": 0,
+    "activation_command_unresolved_source_count": 0,
+    "activation_command_discovery_checked_source_count": 0,
+    "activation_command_discovery_resolved_source_count": 0,
+    "activation_command_discovery_unresolved_source_count": 0,
+    "activation_command_discovery_multi_server_ambiguous_source_count": 0,
+    "activation_command_discovery_status_counts": {},
+    "activation_env_secret_required_source_count": 0,
+    "activation_tool_allowlist_required_source_count": 0,
+    "activation_registry_crosscheck_required_source_count": 0,
+    "activation_fake_transport_required_source_count": 0,
+    "activation_real_transport_required_source_count": 0,
+    "activation_runtime_review_required_source_count": 0,
+    "activation_ready_for_fake_transport_source_count": 0,
+    "daily_review_item_count": 0,
+    "mcp_directory_entry_events": 11,
+    "mcp_tool_result_events": 0,
+    "linked_repository_metadata_events": 0,
+    "risk_scope_signal_events": 1
+  },
+  "sources": [
+    {
+      "source": "awesome-mcp-korea Miscellaneous",
+      "source_type": "github_readme_section",
+      "enabled": false,
+      "trust_tier": "T4_community",
+      "content_type": "mcp_directory",
+      "collection_tier": "C1_static_list",
+      "producer_role": "",
+      "info_purpose": [],
+      "tracked": true,
+      "event_model": "mcp_directory_entry",
+      "repository": "",
+      "activation_status": "",
+      "activation_gates": [],
+      "activation_gate_count": 0,
+      "activation_next_gate": "",
+      "activation_command_discovery_status": "",
+      "activation_command_discovery_checked_at": "",
+      "tools_count": 0,
+      "env_count": 0,
+      "env_preflight_status": "not_required",
+      "env_required_names": [],
+      "env_missing_names": [],
+      "repository_metadata_gaps": [
+        "repository",
+        "github_archived",
+        "github_license",
+        "github_pushed_at"
+      ],
+      "repository_metadata": {},
+      "freshness_sla_days": 7.0,
+      "status": "skipped_disabled",
+      "article_count": 0,
+      "event_count": 0,
+      "latest_event_at": null,
+      "age_days": null,
+      "latest_title": "",
+      "latest_url": "",
+      "latest_mcp_domain": [],
+      "latest_provider": [],
+      "latest_capability": [],
+      "latest_risk_scope": [],
+      "latest_required_field_proxy": {},
+      "errors": []
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "source_type": "mcp_registry_search",
+      "enabled": true,
+      "trust_tier": "T3_registry",
+      "content_type": "mcp_directory",
+      "collection_tier": "C2_registry_api",
+      "producer_role": "registry_index",
+      "info_purpose": [
+        "replacement_seed_candidate",
+        "repository_metadata_enrichment"
+      ],
+      "tracked": true,
+      "event_model": "mcp_directory_entry",
+      "repository": "",
+      "activation_status": "registry_api_smoke_passed",
+      "activation_gates": [],
+      "activation_gate_count": 0,
+      "activation_next_gate": "",
+      "activation_command_discovery_status": "",
+      "activation_command_discovery_checked_at": "",
+      "tools_count": 0,
+      "env_count": 0,
+      "env_preflight_status": "not_required",
+      "env_required_names": [],
+      "env_missing_names": [],
+      "repository_metadata_gaps": [
+        "repository",
+        "github_archived",
+        "github_license",
+        "github_pushed_at"
+      ],
+      "repository_metadata": {},
+      "freshness_sla_days": 7.0,
+      "status": "fresh",
+      "article_count": 11,
+      "event_count": 11,
+      "latest_event_at": "2026-10-18T13:19:12.188439+00:00",
+      "age_days": 0.18,
+      "latest_title": "Korea Tax Calculator",
+      "latest_url": "https://github.com/UpstageAI/korean-tax-calc-mcp",
+      "latest_mcp_domain": [],
+      "latest_provider": [],
+      "latest_capability": [],
+      "latest_risk_scope": [],
+      "latest_required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      },
+      "errors": []
+    }
+  ],
+  "events": [
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "Korea Tax Calculator",
+      "url": "https://github.com/UpstageAI/korean-tax-calc-mcp",
+      "event_at": "2026-10-18T13:19:12.188439+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [],
+      "project_health": [
+        "mcp"
+      ],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "Korean Government Documents (HWPX)",
+      "url": "https://github.com/UpstageAI/korean-report-hwpx",
+      "event_at": "2026-10-14T14:32:26.847800+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [],
+      "project_health": [],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "com.deepsearch.x402/korean-stocks",
+      "url": "https://github.com/deepsearch-hq/deepsearch-x402.git",
+      "event_at": "2026-10-01T06:15:39.626605+00:00",
+      "mcp_domain": [],
+      "provider": [
+        "krx"
+      ],
+      "capability": [
+        "stock",
+        "stocks"
+      ],
+      "risk_scope": [],
+      "project_health": [],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "Korean Notice (공고) Checklist",
+      "url": "https://github.com/RosieOh/korean-notice-mcp",
+      "event_at": "2026-09-25T16:52:03.605418+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [],
+      "project_health": [],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "app.sallim/korea-realty",
+      "url": "https://github.com/sallim-app/korea-realty",
+      "event_at": "2026-07-30T23:48:37.297360+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [],
+      "project_health": [],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "Korea Tax Law",
+      "url": "https://github.com/UpstageAI/korean-tax-mcp",
+      "event_at": "2026-10-16T00:51:13.700386+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [],
+      "project_health": [],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "Korean Law MCP",
+      "url": "https://github.com/chrisryugj/korean-law-mcp",
+      "event_at": "2026-10-10T08:37:53.108903+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [
+        "api"
+      ],
+      "project_health": [
+        "mcp",
+        "api"
+      ],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "risk_scope_signal",
+      "title": "Korean Law MCP",
+      "url": "https://github.com/chrisryugj/korean-law-mcp",
+      "event_at": "2026-10-10T08:37:53.108903+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [
+        "api"
+      ],
+      "project_health": [
+        "mcp",
+        "api"
+      ],
+      "required_field_proxy": {
+        "repository": true,
+        "risk_scope": true,
+        "evidence_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "Korean Patent Status — 특허 존속 여부 판정",
+      "url": "https://github.com/didrod205/korean-patent-mcp",
+      "event_at": "2026-09-17T02:49:06.865069+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [
+        "검색"
+      ],
+      "risk_scope": [],
+      "project_health": [],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "Korean Tax Rulings",
+      "url": "https://github.com/seungmiyoon/korean-tax-mcp",
+      "event_at": "2026-10-07T06:08:54.178792+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [],
+      "project_health": [],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "io.github.raphysicst-create/korean-vocational-learning-map-mcp",
+      "url": "https://github.com/raphysicst-create/korean-vocational-learning-map-mcp",
+      "event_at": "2026-08-09T11:18:31.310348+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [],
+      "project_health": [
+        "mcp",
+        "github",
+        "서버"
+      ],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    },
+    {
+      "source": "Official MCP Registry Korea search",
+      "event_model": "mcp_directory_entry",
+      "title": "io.github.raphysicst-create/korean-secondary-learning-map-mcp",
+      "url": "https://github.com/raphysicst-create/korean-secondary-learning-map-mcp",
+      "event_at": "2026-07-29T15:22:42.075639+00:00",
+      "mcp_domain": [],
+      "provider": [],
+      "capability": [],
+      "risk_scope": [],
+      "project_health": [
+        "mcp",
+        "github",
+        "서버"
+      ],
+      "required_field_proxy": {
+        "repository": true,
+        "source_section": true,
+        "source_url": true
+      }
+    }
+  ],
+  "daily_review_items": [],
+  "source_backlog": {
+    "operational_candidates": [
+      {
+        "id": "github_repository_metadata",
+        "name": "GitHub repository metadata enrichment",
+        "signal_type": "linked_repository_metadata",
+        "activation_gate": "rate-limit handling, repository canonicalization, and archived/license mapping"
+      },
+      {
+        "id": "mcp_registry_crosscheck",
+        "name": "MCP registry cross-check",
+        "signal_type": "mcp_registry_presence",
+        "activation_gate": "registry API availability and canonical package mapping"
+      },
+      {
+        "id": "security_advisory_crosscheck",
+        "name": "GitHub security advisory cross-check",
+        "signal_type": "security_risk",
+        "activation_gate": "advisory API coverage and false positive handling"
+      }
+    ]
+  },
+  "errors": []
+}
