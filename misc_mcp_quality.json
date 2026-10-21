@@ -1,6 +1,6 @@
 {
   "category": "misc_mcp",
-  "generated_at": "2026-10-20T18:51:10.783552+00:00",
+  "generated_at": "2026-10-21T19:03:38.713778+00:00",
   "scope_note": "misc_mcp treats the awesome-mcp-korea section as a T4 community directory seed. Repository metadata, API credential scope, and security context remain separate enrichment layers until archived, license, and advisory fields are collected.",
   "summary": {
     "total_sources": 2,
@@ -148,7 +148,7 @@
       "article_count": 11,
       "event_count": 11,
       "latest_event_at": "2026-10-18T13:19:12.188439+00:00",
-      "age_days": 2.23,
+      "age_days": 3.24,
       "latest_title": "Korea Tax Calculator",
       "latest_url": "https://github.com/UpstageAI/korean-tax-calc-mcp",
       "latest_mcp_domain": [],
