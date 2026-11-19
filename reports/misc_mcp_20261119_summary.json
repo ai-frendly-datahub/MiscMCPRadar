@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-19",
+  "category": "misc_mcp",
+  "article_count": 3,
+  "source_count": 1,
+  "matched_count": 1,
+  "top_entities": [
+    {
+      "name": "Capability",
+      "count": 2
+    },
+    {
+      "name": "Provider",
+      "count": 1
+    }
+  ],
+  "sources": {
+    "Official MCP Registry Korea search": 3
+  },
+  "generated_at": "2026-11-19T22:31:05.511886+00:00"
+}
